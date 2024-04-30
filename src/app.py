@@ -182,9 +182,9 @@ button_style4 = {'background-color': colors4['palet'][0],
                 'color': 'white'}
 
 # PICK COLOR THEME
-colors = colors2
-background_img = background_img2
-button_style = button_style2
+colors = colors1
+background_img = background_img1
+button_style = button_style1
 
 
 
