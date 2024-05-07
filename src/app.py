@@ -11,6 +11,7 @@ from config import colors_config
 import dash_bootstrap_components as dbc
 
 app = Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.SLATE], suppress_callback_exceptions=True)
+server = app.server
 
 navbar_style = {
     'position': 'fixed',
@@ -61,4 +62,4 @@ app.layout = html.Div([
 ])
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8031)
+    app.run(debug=True)
