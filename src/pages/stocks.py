@@ -24,7 +24,7 @@ from config import colors_config, card_config
 
 # donwloading data
 fname = 'DC_2024trades.csv'
-df = pd.read_csv(f'C:/Users/Gebruiker/Documents/Trading/DC_reports/{fname}', parse_dates = ['date'], index_col = 'date')
+df = pd.read_csv(f'../{fname}', parse_dates = ['date'], index_col = 'date')
 
 # dataprep for top15 table on stocks page
 dftop15 = df.groupby('ticker').pnl_cl.sum().sort_values(ascending=False).head(15)

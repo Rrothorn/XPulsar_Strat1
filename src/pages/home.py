@@ -20,8 +20,8 @@ dash.register_page(__name__, path='/')
 
 # donwloading data
 fname = 'DC_2024trades.csv'
-df = pd.read_csv(f'C:/Users/Gebruiker/Documents/Trading/DC_reports/{fname}', parse_dates = ['date'], index_col = 'date')
-
+#df = pd.read_csv(f'C:/Users/Gebruiker/Documents/Trading/DC_reports/{fname}', parse_dates = ['date'], index_col = 'date')
+df = pd.read_csv(f'../{fname}', parse_dates = ['date'], index_col = 'date')
 legend_labels = {'pnl_u': 'All-in', 'pnl_c': 'Conditional', 'pnl_cl': 'Leveraged'}
 
 background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(39,83,81,1))'

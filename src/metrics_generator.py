@@ -37,10 +37,10 @@ def DrawDown(pnl):
 
 # donwloading data
 fname = 'DC_2024trades.csv'
-df = pd.read_csv(f'C:/Users/Gebruiker/Documents/Trading/DC_reports/{fname}', parse_dates = ['date'], index_col = 'date')
+df = pd.read_csv(f'../{fname}', parse_dates = ['date'], index_col = 'date')
 
 fname2 = 'XGB_trades18-23.csv'
-dfhist = pd.read_csv(f'C:/Users/Gebruiker/Documents/Trading/BackTest/{fname2}', parse_dates = ['date'], index_col = 'date')
+dfhist = pd.read_csv(f'../{fname2}', parse_dates = ['date'], index_col = 'date')
 dfhist = dfhist.rename(columns = {'weighted_pnl':'pnl_u', 'betsize':'betsize_u'})
 
 
