@@ -91,7 +91,7 @@ layout = html.Div(
                         style_header={'backgroundColor': colors_config['colors']['surround_figs'],
                                       'color': colors_config['colors']['text']},
                         style_table = {'borderRadius': '10px', 'border':'4px solid #ddd', 'overflow': 'hidden'},
-                        style_cell = {'color': colors_config['colors']['palet'][2],
+                        style_cell = {'color': '#000000',
                                       'font_family':'bold',
                                       }
                         )

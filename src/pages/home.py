@@ -136,6 +136,7 @@ layout = html.Div(
                            }
                     ),
                 html.Div(style={'height': '10px'}),
+
                 ],  style={"margin-right": "15px", "margin-left": "15px"}  # Adjust the margin between columns
                 ),
             ]),
