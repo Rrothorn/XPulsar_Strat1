@@ -10,7 +10,7 @@ import datetime
 
 from config import colors_config
 
-
+import plotly.graph_objects as go
 import plotly.express as px
 
 def Sharpe(pnl):
@@ -50,7 +50,7 @@ dfhist = dfhist.rename(columns = {'weighted_pnl':'pnl_u', 'betsize':'betsize_u'}
 legend_labels = {'pnl_u': 'All-in', 'pnl_c': 'Conditional', 'pnl_cl': 'Leveraged'}
 
 
-def generate_perf_plot1(start_date, end_date, figln_title):
+def generate_perf_plot1(start_date, end_date, figln_title, target):
     # Function to update graphs based on the selected date range  
     dfc = df[(df.index >= start_date) & (df.index <= end_date)]
     dfD = dfc.resample('D').agg({'pnl_u':'sum', 'pnl_c':'sum', 'pnl_cl':'sum', 'betsize_u':'sum', 'betsize_c':'sum', 'betsize_cl':'sum'})
@@ -68,6 +68,9 @@ def generate_perf_plot1(start_date, end_date, figln_title):
     dummy_date = cumdf.index[0] - pd.Timedelta(days=1)
     cumdf.loc[dummy_date] = [0] * len(cumdf.columns)
     cumdf = cumdf.sort_index()
+    
+    # current value for actual vs target
+    current_pnl = dfD.pnl_cl.sum()
 
     #create LineGraph for Returns 
     
@@ -87,7 +90,46 @@ def generate_perf_plot1(start_date, end_date, figln_title):
 
     
     figln.for_each_trace(lambda t: t.update(name=legend_labels[t.name]))
-    return figln  
+    
+    fig_target = go.Figure(go.Indicator(
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        value = current_pnl,
+        mode = "gauge+number+delta",
+        title = {'text': f'{figln_title} Actual vs Target'},
+        delta = {'reference':  target},
+        gauge = {'axis': {'range': [None, 1.3 * target]},
+                 'steps' : [
+                     {'range': [0, 1.3 * target], 'color': '#FFFFFF'},
+                 #     {'range': [0.03, 0.05], 'color': "gray"}
+                     ],
+                 'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': target}}))
+
+    fig_target.update_layout(
+                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        paper_bgcolor = colors_config['colors']['surround_figs'],
+                        font_color = colors_config['colors']['text'],
+                        font_family = colors_config['colors']['font'],
+                        margin = {'l':20, 'r':40, 't':50, 'b':10, 'pad':10},
+                        title = {'x':0.5, 'y':0.95, 'font':{'size':16}},
+                        )
+
+    
+    return figln, fig_target
+
+def generate_target_plot(target, target_title):
+    
+    fig_target = go.Figure(go.Indicator(
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        value = 0.05,
+        mode = "gauge+number+delta",
+        title = {'text': "Actual vs Target"},
+        delta = {'reference': 380},
+        gauge = {'axis': {'range': [None, 0.05]},
+                 'steps' : [
+                     {'range': [0, 250], 'color': "lightgray"},
+                     {'range': [250, 400], 'color': "gray"}],
+                 'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': target}}))
+    return fig_target
 
 def generate_month_bars():
     # Function to update graphs based on the selected date range  
@@ -140,15 +182,19 @@ def generate_annual_bars():
 def generate_metrics_bars(start_date, end_date, bar_title):
     # Function to update graphs based on the selected date range  
     dfc = df[(df.index >= start_date) & (df.index <= end_date)]
+    
+    # Set dataframe on a daily timeframe
     dfD = dfc.resample('D').agg({'pnl_u':'sum', 'pnl_c':'sum', 'pnl_cl':'sum', 'betsize_u':'sum', 'betsize_c':'sum', 'betsize_cl':'sum'})
     dfD = dfD[dfD.pnl_u != 0]  
+    
+    dfM = dfc.resample('M').agg({'pnl_u':'sum', 'pnl_c':'sum', 'pnl_cl':'sum', 'betsize_u':'sum', 'betsize_c':'sum', 'betsize_cl':'sum'})
  
     pnlcols = ['pnl_u', 'pnl_c', 'pnl_cl']
     sizecols = ['betsize_u', 'betsize_c', 'betsize_cl']
 
     ir = 0.048  #current IBKR USD rate
     dfD[pnlcols] = dfD[pnlcols] + ir / 252     
-      
+    dfM[pnlcols] = dfM[pnlcols] + ir / 12     
     
     # calculate the Sharpe Ratio
     sharplist = []
@@ -187,6 +233,18 @@ def generate_metrics_bars(start_date, end_date, bar_title):
     for col in pnlcols:
         profitlist.append(ProfitRatio(dfc[col]))
     dfprofit = pd.DataFrame([profitlist], columns=['pr_u', 'pr_c', 'pr_cl'])
+    
+    # dataprep the winning days vs the losing days
+    windlist = []
+    for col in pnlcols:
+        windlist.append(WinRate(dfD[col]))
+    dfwind = pd.DataFrame([windlist], columns=['wdr_u', 'wdr_c', 'wdr_cl'])
+
+    # dataprep the winning months vs the losing months
+    winmlist = []
+    for col in pnlcols:
+        winmlist.append(WinRate(dfM[col]))
+    dfwinm = pd.DataFrame([winmlist], columns=['wmr_u', 'wmr_c', 'wmr_cl'])
     
     # create BarChart for Sharpe Ratio    
     bar_sharp = px.bar(dfsharp, x=dfsharp.index, y=['s_u', 's_c', 's_cl'], title=f'<b>{bar_title} Sharpe Ratio</b>',
@@ -286,22 +344,56 @@ def generate_metrics_bars(start_date, end_date, bar_title):
                         xaxis = {'title':''},
                         yaxis = {'title':''},
                         showlegend = False
-                        )    
+                        ) 
+    
+    bar_wind = px.bar(dfwind, x=dfwind.index, y=['wdr_u', 'wdr_c', 'wdr_cl'], title=f'<b>{bar_title} Win Days</b>',
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+    bar_wind.update_layout(
+                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        paper_bgcolor = colors_config['colors']['surround_figs'],
+                        font_color = colors_config['colors']['text'],
+                        font_family = colors_config['colors']['font'],
+                        barmode = 'group',
+                        margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
+                        title = {'font':{'size':14} },
+                        xaxis = {'title':''},
+                        yaxis = {'title':''},
+                        showlegend = False
+                        ) 
+    bar_winm = px.bar(dfwinm, x=dfwinm.index, y=['wmr_u', 'wmr_c', 'wmr_cl'], title=f'<b>{bar_title} Win Months</b>',
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+    bar_winm.update_layout(
+                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        paper_bgcolor = colors_config['colors']['surround_figs'],
+                        font_color = colors_config['colors']['text'],
+                        font_family = colors_config['colors']['font'],
+                        barmode = 'group',
+                        margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
+                        title = {'font':{'size':14} },
+                        xaxis = {'title':''},
+                        yaxis = {'title':''},
+                        showlegend = False
+                        ) 
 
-    return bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr  
+    return bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm  
 
 def generate_hist_metrics_bars(start_date, end_date, bar_title):
     # Function to update graphs based on the selected date range  
     dfc = dfhist[(dfhist.index >= start_date) & (dfhist.index <= end_date)]
+    
     dfD = dfc.resample('D').agg({'pnl_u':'sum', 'pnl_c':'sum', 'pnl_cl':'sum', 'betsize_u':'sum', 'betsize_c':'sum', 'betsize_cl':'sum'})
     dfD = dfD[dfD.pnl_u != 0]  
  
     pnlcols = ['pnl_u', 'pnl_c', 'pnl_cl']
     sizecols = ['betsize_u', 'betsize_c', 'betsize_cl']
 
-    ir = 0.048  #current IBKR USD rate
-    dfD[pnlcols] = dfD[pnlcols] + ir / 252     
-      
+    ir = 0.02  #current IBKR USD rate
+    dfD[pnlcols] = dfD[pnlcols] + ir / 252  
+    
+    dfM = dfc.resample('M').agg({'pnl_u':'sum', 'pnl_c':'sum', 'pnl_cl':'sum', 'betsize_u':'sum', 'betsize_c':'sum', 'betsize_cl':'sum'})
+    dfM[pnlcols] = dfM[pnlcols] + ir / 12  
     
     # calculate the Sharpe Ratio
     sharplist = []
@@ -340,7 +432,19 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
     for col in pnlcols:
         profitlist.append(ProfitRatio(dfc[col]))
     dfprofit = pd.DataFrame([profitlist], columns=['pr_u', 'pr_c', 'pr_cl'])
-    
+
+    # dataprep the winning days vs the losing days
+    windlist = []
+    for col in pnlcols:
+        windlist.append(WinRate(dfD[col]))
+    dfwind = pd.DataFrame([windlist], columns=['wdr_u', 'wdr_c', 'wdr_cl'])
+
+    # dataprep the winning months vs the losing months
+    winmlist = []
+    for col in pnlcols:
+        winmlist.append(WinRate(dfM[col]))
+    dfwinm = pd.DataFrame([winmlist], columns=['wmr_u', 'wmr_c', 'wmr_cl'])
+        
     # create BarChart for Sharpe Ratio    
     bar_sharp = px.bar(dfsharp, x=dfsharp.index, y=['s_u', 's_c', 's_cl'], title=f'<b>{bar_title} Sharpe Ratio</b>',
                     color_discrete_sequence = colors_config['colors']['palet']
@@ -439,9 +543,41 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
                         xaxis = {'title':''},
                         yaxis = {'title':''},
                         showlegend = False
-                        )    
+                        )  
+    
+    bar_wind = px.bar(dfwind, x=dfwind.index, y=['wdr_u', 'wdr_c', 'wdr_cl'], title=f'<b>{bar_title} Win Days</b>',
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+    bar_wind.update_layout(
+                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        paper_bgcolor = colors_config['colors']['surround_figs'],
+                        font_color = colors_config['colors']['text'],
+                        font_family = colors_config['colors']['font'],
+                        barmode = 'group',
+                        margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
+                        title = {'font':{'size':14} },
+                        xaxis = {'title':''},
+                        yaxis = {'title':''},
+                        showlegend = False
+                        ) 
+    bar_winm = px.bar(dfwinm, x=dfwinm.index, y=['wmr_u', 'wmr_c', 'wmr_cl'], title=f'<b>{bar_title} Win Months</b>',
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+    bar_winm.update_layout(
+                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        paper_bgcolor = colors_config['colors']['surround_figs'],
+                        font_color = colors_config['colors']['text'],
+                        font_family = colors_config['colors']['font'],
+                        barmode = 'group',
+                        margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
+                        title = {'font':{'size':14} },
+                        xaxis = {'title':''},
+                        yaxis = {'title':''},
+                        showlegend = False
+                        ) 
+    
 
-    return bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr  
+    return bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm  
 
 
 

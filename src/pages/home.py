@@ -12,6 +12,7 @@ import dash
 from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.express as px
+import plotly.graph_objects as go
 import plots_generator
 import metrics_generator
 from config import colors_config, card_config
@@ -32,6 +33,27 @@ colors = {
     'font': 'Verdana',
     'palet': ['#294867', '#98691E', '#672967', '#1C778A', '#C0C0C0']
     }
+
+
+# # Sample data (actual and target)
+# actual_value = 75
+# target_value = 100
+
+# # Calculate percentage of target met by actual
+# percentage_met = (actual_value / target_value) * 100
+
+# fig = go.Figure(go.Indicator(
+#     domain = {'x': [0, 1], 'y': [0, 1]},
+#     value = 450,
+#     mode = "gauge+number+delta",
+#     title = {'text': "Speed"},
+#     delta = {'reference': 380},
+#     gauge = {'axis': {'range': [None, 500]},
+#              'steps' : [
+#                  {'range': [0, 250], 'color': "lightgray"},
+#                  {'range': [250, 400], 'color': "gray"}],
+#              'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': 490}}))
+
 
 
 layout = html.Div(
@@ -136,6 +158,11 @@ layout = html.Div(
                            }
                     ),
                 html.Div(style={'height': '10px'}),
+                dcc.Graph(
+                    id= 'targetplot',
+                    figure={},
+                    style={'height':'23vh', 'width':'30rem', 'border-radius': '15px', 'border':'4px solid #C0C0C0'}
+                    ),
 
                 ],  style={"margin-right": "15px", "margin-left": "15px"}  # Adjust the margin between columns
                 ),
@@ -191,6 +218,20 @@ layout = html.Div(
                     figure={},
                     style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
                     ),
+                ], width=2),
+            dbc.Col([
+                dcc.Graph(
+                    id='windays_bar',
+                    figure={},
+                    responsive=True,
+                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                    ),
+                html.Div(style={'height': '5px'}),
+                dcc.Graph(
+                    id='winmonths_bar',
+                    figure={},
+                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                    ),
                 ], width=2),                        
             ], style={"margin-right": "15px", "margin-left": "15px"} 
             ),
@@ -200,6 +241,7 @@ layout = html.Div(
 @callback(
     [
     Output('ytd_plot', 'figure'),
+    Output('targetplot', 'figure'),
     Output('pnl', 'children'),
     Output('sharp', 'children'),
     Output('maxdd', 'children'),
@@ -211,6 +253,8 @@ layout = html.Div(
     Output('to_bar', 'figure'),
     Output('mto_bar', 'figure'),
     Output('pr_bar', 'figure'),
+    Output('windays_bar', 'figure'),
+    Output('winmonths_bar', 'figure')
     ],
     [
     Input('date-range-picker', 'start_date'),
@@ -231,20 +275,25 @@ def update_page1(start_date, end_date, mtd, qtd, ytd):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if button_id == 'mtd':
         start_date = pd.Timestamp.now().to_period('M').start_time
-        figln_title = 'MTD' 
+        figln_title = 'MTD'
+        target = 0.7*0.0222
     elif button_id == 'qtd':
         start_date =  pd.Timestamp.now().to_period('Q').start_time
         figln_title = 'QTD'
+        target = 0.7 * 0.0307 
     elif button_id == 'ytd':
         start_date = pd.Timestamp.now().to_period('Y').start_time
         figln_title = 'YTD'
+        target = 0.7 * 0.3543  
     else:
         figln_title = 'YTD'
+        target = 0.7 * 0.3543
     bar_title = figln_title
+    target_title = figln_title
     
-    figln = plots_generator.generate_perf_plot1(start_date, end_date, figln_title) 
+    figln, fig_target = plots_generator.generate_perf_plot1(start_date, end_date, figln_title, target) 
     pnl, sharp, maxdd, winrate, pr = metrics_generator.generate_metrics(start_date, end_date)
-    bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr = plots_generator.generate_metrics_bars(start_date, end_date, bar_title)
+    bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm = plots_generator.generate_metrics_bars(start_date, end_date, bar_title)
     
     
-    return figln, pnl, sharp, maxdd, winrate, pr, bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr
+    return figln, fig_target, pnl, sharp, maxdd, winrate, pr, bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm

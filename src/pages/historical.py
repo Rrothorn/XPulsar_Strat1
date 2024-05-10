@@ -175,7 +175,23 @@ layout = html.Div(
                     figure={},
                     style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
                     ),
+                ], width=2),
+            dbc.Col([
+                dcc.Graph(
+                    id='windh_bar',
+                    figure={},
+                    responsive=True,
+                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                    ),
+                html.Div(style={'height': '5px'}),
+                dcc.Graph(
+                    id='winmh_bar',
+                    figure={},
+                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                    ),
                 ], width=2),                        
+
+                        
             ], style={"margin-right": "15px", "margin-left": "15px"} 
         )
     ]
@@ -197,6 +213,8 @@ layout = html.Div(
      Output('mtoh_bar', 'figure'),
      Output('winh_bar', 'figure'),
      Output('prh_bar', 'figure'),
+     Output('windh_bar', 'figure'),
+     Output('winmh_bar', 'figure'),
      Output('donut', 'figure'),
      ], 
     [
@@ -257,6 +275,6 @@ def update_page2(y2018, y2019, y2020, y2021, y2022, y2023, yall, tf_dd):
     hist_plot = plots_generator.generate_histperf(start_date, end_date, plot_title)
     pnlh, sharph, maxddh, winrateh, profitrateh = metrics_generator.generate_hist_metrics(start_date, end_date)
     donut = plots_generator.generate_donut(tf_dd)
-    bar_sharph, bar_toh, bar_ddh, bar_mtoh, bar_winh, bar_prh = plots_generator.generate_hist_metrics_bars(start_date, end_date, bar_title)
+    bar_sharph, bar_toh, bar_ddh, bar_mtoh, bar_winh, bar_prh, bar_windh, bar_winmh = plots_generator.generate_hist_metrics_bars(start_date, end_date, bar_title)
     
-    return hist_plot, pnlh, sharph, maxddh, winrateh, profitrateh,  bar_sharph, bar_toh, bar_ddh, bar_mtoh, bar_winh, bar_prh, donut
+    return hist_plot, pnlh, sharph, maxddh, winrateh, profitrateh,  bar_sharph, bar_toh, bar_ddh, bar_mtoh, bar_winh, bar_prh, bar_windh, bar_winmh, donut
