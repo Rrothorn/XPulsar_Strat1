@@ -38,9 +38,9 @@ dfworst15 = dfworst15.rename(columns={'ticker':'Worst15', 'pnl_cl':'Worst_PnL'})
 dft = round(pd.concat([dftop15, dfworst15], axis=1), 4)
 percentage = FormatTemplate.percentage(2)
 table1_columns = [
-        dict(id='Top15', name='Top 15'),
+        dict(id='Top15', name='Top 22'),
         dict(id='Top_PnL', name='P/L', type='numeric', format=percentage),
-        dict(id='Worst15', name='Worst 15'),
+        dict(id='Worst15', name='Worst 22'),
         dict(id='Worst_PnL', name='P/L', type='numeric', format=percentage),
       ]
 
@@ -79,10 +79,34 @@ layout = html.Div(
                 html.Div(style={'height': '10px'}),
                 dcc.Graph(id='bar-fig',
                           figure={},
-                          style={'border-radius': '15px', 'border':'4px solid #ddd'}
-                          )
-                ], width = 6, style = {'margin-right':'80px'}),
+                          style={'height':'50vh', 'border-radius': '15px', 'border':'4px solid #ddd'}
+                          ),
+                html.Br(),
+                dbc.Row([
+                    dbc.Col([
+                        dcc.Graph(id='best_bar',
+                                  figure = {},
+                                  style={'height':'32vh','border-radius': '15px', 'border':'4px solid #ddd'}
+                                  )
+                        ], width = 6),
+                    dbc.Col([
+                        dcc.Graph(id='worst_bar',
+                                  figure = {},
+                                  style={'height':'32vh','border-radius': '15px', 'border':'4px solid #ddd'}
+                                  )
+                        ], width = 6),
+                    ]),
+                ], width = 6),
+             
+            dbc.Col(width = 1),
             dbc.Col([
+                dcc.Dropdown(id='table_dpdn',
+                             multi=False,
+                             value= 'Leveraged',
+                             options = ['Leveraged', 'All-in', 'Conditional'],
+                             style ={'border-radius': '15px'}
+                             ),
+                html.Br(),
                 html.Div([dash_table.DataTable(
                         id='table',
                         data=dft.to_dict('records'),
@@ -96,27 +120,30 @@ layout = html.Div(
                                       }
                         )
                     ])
-                ], width = 3)
-        ]),
-
-                 
+                ], width = 4)
+        ]),    
         ]
     )
+
+                
 
 @callback(
     [
      Output('bar-fig', 'figure'),
-     Output('table', 'data')
+     Output('table', 'data'),
+     Output('best_bar', 'figure'),
+     Output('worst_bar', 'figure'),
      ],
     [
      Input('mtd', 'n_clicks'),
      Input('qtd', 'n_clicks'),
      Input('ytd', 'n_clicks'),
      Input('my_dpdn', 'value'),
+     Input('table_dpdn', 'value')
      ],
     )
 
-def update_stockspage(mtd, qtd, ytd, selected_stock):
+def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
     ctx = dash.callback_context
     button_id = None
     if ctx.triggered:
@@ -131,18 +158,27 @@ def update_stockspage(mtd, qtd, ytd, selected_stock):
     else:
         start_date = df.index[0]
     
+    if selected_strat == 'All-in':
+        strat = 'pnl_u'
+    elif selected_strat == 'Conditional':
+        strat = 'pnl_c'
+    elif selected_strat == 'Leveraged':
+        strat = 'pnl_cl'
+    
     figln = plots_generator.generate_individual_stock_graph(selected_stock, start_date)
     
     # # dataprep for top15 table
     dfc = df[df.index >= start_date]
-    dftop15 = dfc.groupby('ticker').pnl_cl.sum().sort_values(ascending=False).head(15)
+    dftop15 = dfc.groupby('ticker')[strat].sum().sort_values(ascending=False).head(22)
     dftop15 = dftop15.reset_index()
-    dftop15 = dftop15.rename(columns={'ticker':'Top15', 'pnl_cl':'Top_PnL'})
+    dftop15 = dftop15.rename(columns={'ticker':'Top15', strat:'Top_PnL'})
     
-    dfworst15 = dfc.groupby('ticker').pnl_cl.sum().sort_values(ascending=True).head(15)
+    dfworst15 = dfc.groupby('ticker')[strat].sum().sort_values(ascending=True).head(22)
     dfworst15 = dfworst15.reset_index()
-    dfworst15 = dfworst15.rename(columns={'ticker':'Worst15', 'pnl_cl':'Worst_PnL'})
+    dfworst15 = dfworst15.rename(columns={'ticker':'Worst15', strat:'Worst_PnL'})
     
     dft = round(pd.concat([dftop15, dfworst15], axis=1), 4)
+    
+    figbar, figbar2 = plots_generator.generate_bestinhistory_bar(strat)
 
-    return figln, dft.to_dict('records')
+    return figln, dft.to_dict('records'), figbar, figbar2

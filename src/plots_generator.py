@@ -639,7 +639,7 @@ def generate_donut(selected_tf):
                 title = f'<b>Expected {selected_tf} Performance</b>',
                 color_discrete_sequence = colors_config['colors']['palet'],
                 hole=0.4,
-                labels = {'pnl_cl': 'Actual Value'}
+                labels = {'pnl_cl': 'Actual Value', 'tickformat':',.2%'}
                 )
     
     donut.update_layout(
@@ -667,7 +667,7 @@ def generate_individual_stock_graph(ticker, start_date):
     dummy_date = dfcum.index[0] - pd.Timedelta(days=1)
     dfcum.loc[dummy_date] = [0] * len(dfcum.columns)
     dfcum = dfcum.sort_index()
-    print(dfcum)
+    
     figln = px.line(dfcum, x=dfcum.index, y=['pnl_u','pnl_c','pnl_cl'], title = f'{ticker}',
                    color_discrete_sequence = colors_config['colors']['palet']
                     ).update_layout(
@@ -679,8 +679,60 @@ def generate_individual_stock_graph(ticker, start_date):
                             title = {'x':0.5, 'y':0.95, 'font':{'size':20}},
                             xaxis = {'title':''},
                             yaxis = {'title':'', 'tickformat': '.2%'},
-                            legend = {'title': '', 'orientation':'h', 'y':1.14, 'xanchor':'right', 'x':0.9}
+                            legend = {'title': '', 'orientation':'h', 'y':0.99, 'xanchor':'left', 'x':0.03}
                             )
     figln.for_each_trace(lambda t: t.update(name=legend_labels[t.name]))
 
     return figln
+
+def generate_bestinhistory_bar(selected_strat):
+    # # dataprep for top15 table
+    strat = selected_strat
+    dfc = dfhist.copy()
+    dftop10 = dfc.groupby('ticker')[strat].sum().sort_values(ascending=False).head(10)
+    dftop10 = dftop10.reset_index()
+    dftop10 = dftop10.rename(columns={'ticker':'Top10', strat:'Top_PnL'})
+    dftop10 = dftop10.sort_values(by='Top_PnL', ascending=True)
+    print(dftop10)
+    
+    dfworst10 = dfc.groupby('ticker')[strat].sum().sort_values(ascending=True).head(10)
+    dfworst10 = dfworst10.reset_index()
+    dfworst10 = dfworst10.rename(columns={'ticker':'Worst10', strat:'Worst_PnL'})
+  #  dfworst10 = dfworst10[strat].sort_values(ascending=False)
+
+    colors1 = px.colors.diverging.RdYlGn
+    colors2 = px.colors.sequential.YlOrRd
+
+ # Create the bar chart
+    bar_best = px.bar(dftop10, x='Top_PnL', y='Top10', title=f'<b>Top 10 Stocks of All Time</b>', 
+                      orientation='h', color='Top10', color_discrete_sequence=colors1)
+
+    bar_best.update_layout(
+                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        paper_bgcolor = colors_config['colors']['surround_figs'],
+                        font_color = colors_config['colors']['text'],
+                        font_family = colors_config['colors']['font'],
+                        margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
+                        title = {'x':0.5, 'font':{'size':16} },
+                        xaxis = {'title':'', 'tickformat':',.2%'},
+                        yaxis = {'title':'', 'categoryorder': 'total ascending'},
+                        showlegend = False
+                        ) 
+    bar_worst = px.bar(dfworst10, x='Worst_PnL', y='Worst10', title=f'<b>Worst 10 Stocks of All Time</b>', 
+                      orientation='h', color='Worst10', color_discrete_sequence=colors1)
+
+    bar_worst.update_layout(
+                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        paper_bgcolor = colors_config['colors']['surround_figs'],
+                        font_color = colors_config['colors']['text'],
+                        font_family = colors_config['colors']['font'],
+                        margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
+                        title = {'x':0.5, 'font':{'size':16} },
+                        xaxis = {'title':'', 'tickformat':',.2%'},
+                        yaxis = {'title':''},
+                        showlegend = False
+                        ) 
+    
+    return bar_best, bar_worst
+    
+    
