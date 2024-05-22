@@ -77,7 +77,7 @@ def generate_perf_plot1(start_date, end_date, figln_title, target):
     figln = px.line(cumdf, x=cumdf.index, y=['pnl_u','pnl_c','pnl_cl'], title=f'<b>{figln_title} Performance 2024</b>',
                     color_discrete_sequence = colors_config['colors']['palet'])
     figln.update_layout(
-                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        plot_bgcolor='#FFFFFF',
                         paper_bgcolor = colors_config['colors']['surround_figs'],
                         font_color = colors_config['colors']['text'],
                         font_family = colors_config['colors']['font'],
@@ -85,7 +85,7 @@ def generate_perf_plot1(start_date, end_date, figln_title, target):
                         title = {'x':0.5, 'y':0.95, 'font':{'size':20}},
                         xaxis = {'title':'', 'gridcolor':'#808080'},
                         yaxis = {'title':'', 'tickformat': '.2%', 'gridcolor':'#808080'},
-                        legend = {'title': '', 'orientation':'h', 'y':1.14, 'xanchor':'right', 'x':0.9}
+                        legend = {'title': '', 'orientation':'h', 'y':0.99, 'xanchor':'left', 'x':0.03}
                         )
 
     
@@ -94,15 +94,15 @@ def generate_perf_plot1(start_date, end_date, figln_title, target):
     fig_target = go.Figure(go.Indicator(
         domain = {'x': [0, 1], 'y': [0, 1]},
         value = current_pnl,
+        number={'valueformat': '.2%'},
         mode = "gauge+number+delta",
         title = {'text': f'{figln_title} Actual vs Target'},
-        delta = {'reference':  target},
-        gauge = {'axis': {'range': [None, 1.3 * target]},
-                 'steps' : [
-                     {'range': [0, 1.3 * target], 'color': '#FFFFFF'},
-                 #     {'range': [0.03, 0.05], 'color': "gray"}
-                     ],
-                 'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': target}}))
+        delta = {'reference':  target, 'valueformat': '.2%'},
+        gauge = {'axis': {'range': [None, 1.3 * target], 'tickformat':',.2%'},
+                 'bar': {'color': '#178474'},                 
+                 'steps' : [{'range': [0, 1.3 * target], 'color': '#FFFFFF'},],
+                 'threshold' : {'line': {'color': colors_config['colors']['palet'][2], 'width': 4}, 'thickness': 0.75, 'value': target}},
+        ))
 
     fig_target.update_layout(
                         plot_bgcolor=colors_config['colors']['bg_figs'],
@@ -125,11 +125,13 @@ def generate_target_plot(target, target_title):
         title = {'text': "Actual vs Target"},
         delta = {'reference': 380},
         gauge = {'axis': {'range': [None, 0.05]},
+                 'bar': {'color': '#178474'},                 
                  'steps' : [
                      {'range': [0, 250], 'color': "lightgray"},
                      {'range': [250, 400], 'color': "gray"}],
                  'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': target}}))
     return fig_target
+
 
 def generate_month_bars():
     # Function to update graphs based on the selected date range  
@@ -276,7 +278,7 @@ def generate_metrics_bars(start_date, end_date, bar_title):
                         margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
                         title = {'font':{'size':14} },
                         xaxis = {'title':''},
-                        yaxis = {'title':'', 'tickformat': ',.1%'},
+                        yaxis = {'title':'', 'tickformat': ',.0%'},
                         showlegend = False
                         )
 
@@ -292,7 +294,7 @@ def generate_metrics_bars(start_date, end_date, bar_title):
                         margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
                         title = {'font':{'size':14} },
                         xaxis = {'title':''},
-                        yaxis = {'title':''},
+                        yaxis = {'title':'', 'tickformat':',.0%'},
                         showlegend = False
                         )    
     
@@ -358,7 +360,7 @@ def generate_metrics_bars(start_date, end_date, bar_title):
                         margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
                         title = {'font':{'size':14} },
                         xaxis = {'title':''},
-                        yaxis = {'title':''},
+                        yaxis = {'title':'', 'tickformat':',.0%'},
                         showlegend = False
                         ) 
     bar_winm = px.bar(dfwinm, x=dfwinm.index, y=['wmr_u', 'wmr_c', 'wmr_cl'], title=f'<b>{bar_title} Win Months</b>',
@@ -373,7 +375,7 @@ def generate_metrics_bars(start_date, end_date, bar_title):
                         margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
                         title = {'font':{'size':14} },
                         xaxis = {'title':''},
-                        yaxis = {'title':''},
+                        yaxis = {'title':'', 'tickformat':',.0%'},
                         showlegend = False
                         ) 
 
@@ -475,7 +477,7 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
                         margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
                         title = {'font':{'size':14} },
                         xaxis = {'title':''},
-                        yaxis = {'title':'', 'tickformat': ',.1%'},
+                        yaxis = {'title':'', 'tickformat': ',.0%'},
                         showlegend = False
                         )
 
@@ -491,7 +493,7 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
                         margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
                         title = {'font':{'size':14} },
                         xaxis = {'title':''},
-                        yaxis = {'title':''},
+                        yaxis = {'title':'', 'tickformat':',.0%'},
                         showlegend = False
                         )    
     
@@ -557,7 +559,7 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
                         margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
                         title = {'font':{'size':14} },
                         xaxis = {'title':''},
-                        yaxis = {'title':''},
+                        yaxis = {'title':'', 'tickformat': ',.0%'},
                         showlegend = False
                         ) 
     bar_winm = px.bar(dfwinm, x=dfwinm.index, y=['wmr_u', 'wmr_c', 'wmr_cl'], title=f'<b>{bar_title} Win Months</b>',
@@ -572,7 +574,7 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
                         margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
                         title = {'font':{'size':14} },
                         xaxis = {'title':''},
-                        yaxis = {'title':''},
+                        yaxis = {'title':'', 'tickformat':',.0%'},
                         showlegend = False
                         ) 
     
@@ -600,7 +602,7 @@ def generate_histperf(start_date, end_date, plot_title):
     figln = px.line(cumdf, x=dfD.index, y=['pnl_u','pnl_c','pnl_cl'], title=f'<b>Performance {plot_title}</b>',
                     color_discrete_sequence = colors_config['colors']['palet'])
     figln.update_layout(
-                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        plot_bgcolor= "#FFFFFF",
                         paper_bgcolor = colors_config['colors']['surround_figs'],
                         font_color = colors_config['colors']['text'],
                         font_family = colors_config['colors']['font'],
@@ -608,7 +610,7 @@ def generate_histperf(start_date, end_date, plot_title):
                         title = {'x':0.5, 'y':0.95, 'font':{'size':20}},
                         xaxis = {'title':'', 'gridcolor':'#808080'},
                         yaxis = {'title':'', 'tickformat': '.2%', 'gridcolor':'#808080'},
-                        legend = {'title': '', 'orientation':'h', 'y':1.14, 'xanchor':'right', 'x':0.9}
+                        legend = {'title': '', 'orientation':'h', 'y':0.99, 'xanchor':'left', 'x':0.03}
                         ) 
     figln.for_each_trace(lambda t: t.update(name=legend_labels[t.name]))
     
@@ -669,7 +671,7 @@ def generate_individual_stock_graph(ticker, start_date):
     figln = px.line(dfcum, x=dfcum.index, y=['pnl_u','pnl_c','pnl_cl'], title = f'{ticker}',
                    color_discrete_sequence = colors_config['colors']['palet']
                     ).update_layout(
-                            plot_bgcolor= colors_config['colors']['bg_figs'],
+                            plot_bgcolor= '#FFFFFF',
                             paper_bgcolor = colors_config['colors']['surround_figs'],
                             font_color = colors_config['colors']['text'],
                             font_family = colors_config['colors']['font'],

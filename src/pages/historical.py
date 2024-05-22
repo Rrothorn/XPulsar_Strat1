@@ -27,67 +27,64 @@ dropdown_values = {
     }
 
 
-layout = html.Div(
-            style={
-                'background-image': background_img,  # Specify the path to your image file
-                'background-size': 'cover',  # Cover the entire container
-                'background-position': 'center',  # Center the background image
-                'height': '100vh',  # Set the height to full viewport height
-                'padding': '30px'  # Add some padding for better visibility of content
-            },
+layout = html.Div([
 
-    children=[
-        dbc.Row([
-            dbc.Col([
-                dbc.Card(
-                    dbc.CardBody(
-                        [
-                            html.H4('Portfolio', className='card-title', style=card_config['cardtitle']),
-                            html.P(id='pnlh', className='card-text', style=card_config['cardtext']),
-                        ]
-                        ),
-                        style=card_config['cardstyle']
-                    ),
-                html.Div(style={'height': '10px'}),
-                dbc.Card(
-                    dbc.CardBody(
-                        [
-                            html.H4('Sharpe Ratio', className='card-title', style=card_config['cardtitle']),
-                            html.P(id='sharph', className='card-text', style=card_config['cardtext'])
-                        ]
-                        ),
-                        style=card_config['cardstyle']
-                    ),                                
-                html.Div(style={'height': '10px'}),
-                dbc.Card(
-                    dbc.CardBody(
-                        [
-                            html.H4('DrawDown', className='card-title', style=card_config['cardtitle']),
-                            html.P(id='maxddh', className='card-text', style=card_config['cardtext'])
-                        ]
-                        ),
-                        style=card_config['cardstyle']
-                    ),  
-                html.Div(style={'height': '10px'}),
-                dbc.Card(
-                    dbc.CardBody(
-                        [
-                            html.H4('WinRate', className='card-title', style=card_config['cardtitle']),
-                            html.P(id='winrateh', className='card-text', style=card_config['cardtext'])
-                        ]
-                        ),
-                        style=card_config['cardstyle']
-                    ),  
-                html.Div(style={'height': '10px'}),
-                dbc.Card(
-                    dbc.CardBody(
-                        [
-                            html.H4('ProfitRatio', className='card-title', style=card_config['cardtitle']),
-                            html.P(id='prh', className='card-text', style=card_config['cardtext'])
-                        ]
-                        ),
-                        style=card_config['cardstyle']
-                    ),                 
+    dbc.Card(
+        dbc.CardBody([
+            dbc.Row([
+                dbc.Col([
+                html.Div([
+                    html.Div([
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                html.H4('Portfolio', className='card-title', style=card_config['cardtitle']),
+                                html.P(id='pnlh', className='card-text', style=card_config['cardtext']),
+                                ]
+                                ),
+                            style=card_config['cardstyle']),
+                        ], className = 'w-100'),
+                    html.Div([
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                html.H4('Sharpe Ratio', className='card-title', style=card_config['cardtitle']),
+                                html.P(id='sharph', className='card-text', style=card_config['cardtext'])
+                                ]
+                                ),
+                            style=card_config['cardstyle']),
+                        ], className = 'w-100'),
+                    html.Div([
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                html.H4('DrawDown', className='card-title', style=card_config['cardtitle']),
+                                html.P(id='maxddh', className='card-text', style=card_config['cardtext'])
+                                ]
+                                ),
+                            style=card_config['cardstyle']),
+                        ], className = 'w-100'),
+                    html.Div([
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                html.H4('WinRate', className='card-title', style=card_config['cardtitle']),
+                                html.P(id='winrateh', className='card-text', style=card_config['cardtext'])
+                                ]
+                                ),
+                            style=card_config['cardstyle']),
+                        ], className = 'w-100'),
+                    html.Div([
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                html.H4('ProfitRatio', className='card-title', style=card_config['cardtitle']),
+                                html.P(id='prh', className='card-text', style=card_config['cardtext'])
+                                ]
+                                ),
+                            style=card_config['cardstyle']),
+                        ], className = 'w-100'),
+                    ], className = 'vstack gap-3'),
             ], width=2),
             
             dbc.Col([
@@ -104,10 +101,10 @@ layout = html.Div(
                 dcc.Graph(
                     id='historical_plot',
                     figure={},
-                    style={'height':'40vh', 'border-radius': '15px', 'border':'4px solid #C0C0C0'}
+                    style={'height':'48vh', 'border-radius': '15px', 'border':'4px solid #C0C0C0'}
                 ),
                 html.Br(),
-            ], width=5),
+            ], width=6),
             
             dbc.Col([
                 dcc.Dropdown(
@@ -119,83 +116,112 @@ layout = html.Div(
                 dcc.Graph(
                     id='donut',
                     figure = {},
-                    style={'height':'40vh', 'border-radius': '15px', 'border':'4px solid #ddd'}
+                    style={'border-radius': '15px', 'border':'4px solid #ddd'}
                     )            
-            ], width=3),
+            ], width=4),
         ], style={"margin-right": "15px", "margin-left": "15px"}  # Adjust the margin between columns
 
         ),
         dbc.Row([
-            html.Div(style={'height': '15px'}),
             dbc.Col([
                 dcc.Graph(
                     figure = plots_generator.generate_annual_bars(),
                     responsive=True,
-                    style={'height':'34vh', 'border-radius': '10px', 'border':'4px solid #ddd'},
+                    style={'height':'36vh', 'border-radius': '10px', 'border':'4px solid #ddd'},
                     ),               
                 ], width = 4),
             dbc.Col([
-                dcc.Graph(
-                    id='sharph_bar',
-                    figure={},
-                    responsive=True,
-                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                    ),
-                html.Div(style={'height': '5px'}),
-                dcc.Graph(
-                    id='toh_bar',
-                    figure={},
-                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                    ), 
+                dbc.Row([
+                    html.Div([
+                        dcc.Graph(
+                            id='sharph_bar',
+                            figure={},
+                            responsive=True,
+                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                            ),
+                        ]),
+                    ]),
+                html.Br(),
+                dbc.Row([
+                    html.Div([
+                        dcc.Graph(
+                            id='toh_bar',
+                            figure={},
+                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                            ), 
+                        ]),
+                    ]),
                 ], width=2),
             dbc.Col([
-                dcc.Graph(
-                    id='ddh_bar',
-                    figure={},
-                    responsive=True,
-                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                    ),
-                html.Div(style={'height': '5px'}),
-                dcc.Graph(
-                    id='mtoh_bar',
-                    figure={},
-                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                    ),                                
+                dbc.Row([
+                    html.Div([
+                        dcc.Graph(
+                            id='ddh_bar',
+                            figure={},
+                            responsive=True,
+                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                            ),
+                        ]),
+                    ]),
+                html.Br(),
+                dbc.Row([
+                    html.Div([
+                        dcc.Graph(
+                            id='mtoh_bar',
+                            figure={},
+                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                            ),
+                        ])
+                    ]),                                
                 ], width=2),
             dbc.Col([
-                dcc.Graph(
-                    id='winh_bar',
-                    figure={},
-                    responsive=True,
-                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                    ),
-                html.Div(style={'height': '5px'}),
-                dcc.Graph(
-                    id='prh_bar',
-                    figure={},
-                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                    ),
+                dbc.Row([
+                    html.Div([
+                        dcc.Graph(
+                            id='winh_bar',
+                            figure={},
+                            responsive=True,
+                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                            ),
+                        ]),
+                    ]),
+                html.Br(),
+                dbc.Row([
+                    html.Div([
+                        dcc.Graph(
+                            id='prh_bar',
+                            figure={},
+                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                            ),
+                        ]),
+                    ]),
                 ], width=2),
             dbc.Col([
-                dcc.Graph(
-                    id='windh_bar',
-                    figure={},
-                    responsive=True,
-                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                    ),
-                html.Div(style={'height': '5px'}),
-                dcc.Graph(
-                    id='winmh_bar',
-                    figure={},
-                    style={'height':'17vh', 'width':'13rem', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                    ),
-                ], width=2),                        
-
-                        
-            ], style={"margin-right": "15px", "margin-left": "15px"} 
-        )
-    ]
-)
+                dbc.Row([
+                    html.Div([
+                        dcc.Graph(
+                            id='windh_bar',
+                            figure={},
+                            responsive=True,
+                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                            ),
+                        ]),
+                    ]),
+                html.Br(),
+                dbc.Row([
+                    html.Div([
+                        dcc.Graph(
+                            id='winmh_bar',
+                            figure={},
+                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
+                            ),
+                        ]),
+                    ]),
+                ], width=2),              
+            ], style={"margin-right": "15px", "margin-left": "15px"}),
+        ], style = {'background-color': 'rgba(39,83,81,1)'}),
+        ),
+    ])
 
 
 

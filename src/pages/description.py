@@ -36,7 +36,7 @@ layout =  html.Div(style={'background-image': background_img, 'height': '100vh'}
                                style={'color':'#95D7E0'},
                                ),
                         ]),
-                    style={'width': '30rem',
+                    style={
                            'margin-left':'60px',
                            'border-radius': '14px',
                            'border':'4px solid #ddd',
@@ -44,7 +44,7 @@ layout =  html.Div(style={'background-image': background_img, 'height': '100vh'}
                            }
                     )
 
-                ], width = 6),
+                ], width = 5),
 
             dbc.Col([
                 dbc.Card(
@@ -61,10 +61,10 @@ layout =  html.Div(style={'background-image': background_img, 'height': '100vh'}
                                style={'color':'#95D7E0'},
                                ),
                         ]),
-                    style={'width': '30rem', 'margin-left':'60px', 'border-radius': '14px', 'border':'4px solid #ddd', 'font-size':'15px'}
+                    style={'margin-left':'60px', 'border-radius': '14px', 'border':'4px solid #ddd', 'font-size':'15px'}
                     )
 
-                ], width = 6),
+                ], width = 5),
             ]),
         
         html.Div(style={'height': '25px'}),
@@ -85,9 +85,9 @@ layout =  html.Div(style={'background-image': background_img, 'height': '100vh'}
                                style={'color': '#95D7E0'}
                                ),
                         ]),
-                    style={'width': '30rem', 'margin-left':'60px', 'border-radius': '10px', 'border':'4px solid #ddd', 'font-size':'15px'}
+                    style={'margin-left':'60px', 'border-radius': '10px', 'border':'4px solid #ddd', 'font-size':'15px'}
                     ),
-                ], width = 6),
+                ], width = 5),
             
             dbc.Col([
                 dbc.Card(
@@ -110,17 +110,17 @@ layout =  html.Div(style={'background-image': background_img, 'height': '100vh'}
                                className='card-text',
                                style={'color':colors_config['colors']['palet'][2]})
                         ]),
-                    style={'width': '30rem',
+                    style={
                            'margin-left':'60px',
                            'border-radius': '10px',
                            'border':'4px solid #ddd',
                            'font-size':'15px',
                            'font-weight': 'bold',
-                           'background-color': colors_config['colors']['bg_figs']
+                           'background-color': '#FFFFFF'
                            }
                     )
 
-                ], width = 6)
+                ], width = 5)
         ]),
     ])
 ])

@@ -5,29 +5,63 @@ Created on Sun May  5 11:59:12 2024
 @author: Gebruiker
 """
 
+# =============================================================================
+# This APP is a DASHBOARD to present the performance and performance metrics of a Machine Learning strategy on a portfolio of US stocks.
+# The dashboard is multipage and its content has 5 pages
+#  1: the 2024 performance
+#  2: the 2018-2023 performance
+#  3: the individual stock contributions to the 2024 performance
+#  4: a description page summarising the trading strategy
+#  5: a page where you can download daily reports
+# Technically the dashboard is created as:
+#     |-- SRC /  app.py
+#                config.py
+#                plots_generator.py
+#                metrics_generator.py
+#                report_creator.py
+#                -- PAGES      /   home.py
+#                                  historical.py
+#                                  stock.py
+#                                  description.py
+#                                  report.py
+#     |-- DATA / DC_2024trades.csv
+#                XGB_trades18-23.csv 
+#                DC_reports24.csv
+#     |-- ASSETS / logo.png
+# =============================================================================
+
+
+# =============================================================================
+# This is the app.py central page from which the app is run. 
+# It contains the app.layout which is just a navigation bar and footer surrounding the content of a multipage container.  
+# 
+# =============================================================================
+
+
 import dash
 from dash import Dash, html, dcc
 from config import colors_config
 import dash_bootstrap_components as dbc
 
+
+# =============================================================================
+#  Initialising the Dash app 
+#  setting use_pages = True to ensure a multipage dashboard
+#  import external sheets 1) a dash bootstrap theme for fluency of the different components 2) font-awesome for copyright figurine
+#  include assets folder to direct to images and CSS files
+# 
+# =============================================================================
 app = Dash(__name__, use_pages=True, external_stylesheets=
            [dbc.themes.SLATE,
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css'
             ], suppress_callback_exceptions=True, assets_folder='../assets')
-server = app.server
+server = app.server   # required for publishing
 
-navbar_style = {
-    'position': 'fixed',
-    'top': 0,
-    'left': 0,
-    'bottom': 0,
-#    'width': '16rem',
-    }
+######################  NAVIGATION BAR #################################
 
 # Define the navigation bar
 navbar = html.Div([
     html.Div([
-        # Logo (replace 'logo.png' with your actual logo file)
         html.Img(src='/assets/xpulsar-logo.png', height='120px', style={'float': 'right', 'margin-top': '3px', 'margin-right': '20px'}),
     ], style={'width': '100%'}),  # Ensures the logo stays on the same line as the navigation links
 
@@ -52,10 +86,9 @@ navbar = html.Div([
             className='text-center text-primary, mb-4',
             style={'font-size': '18px', 'color': colors_config['colors']['palet'][4], 'width': '100%'}),  # Span the entire width
 ],
-#    style=navbar_style,
 )
 
-
+##################### FOOTER  ################################
 #define footer
 footer = dbc.Container(
     dbc.Row(
@@ -74,6 +107,7 @@ footer =     html.Footer([
         ])
     ],)
 
+######################### LAYOUT of APP  and RUN ###############################
 
 app.layout = html.Div([
     navbar,
