@@ -114,7 +114,7 @@ layout = html.Div(
                             ],                        
                         )
                     ]),
-                ], width=5),
+                ], width=8),
             ]),                 
         ]
     )
