@@ -19,7 +19,7 @@ from config import colors_config, card_config
 
 dash.register_page(__name__)
 
-background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(39,83,81,1))'
+background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(0,0,0,1))'
 #pie_dict = {'Monthly':total_monthlies, 'Quarterly':total_quarterlies}
 
 dropdown_values = {
@@ -131,97 +131,26 @@ layout = html.Div([
                     ),               
                 ], width = 4),
             dbc.Col([
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='sharph_bar',
-                            figure={},
-                            responsive=True,
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                html.Br(),
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='toh_bar',
-                            figure={},
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ), 
-                        ]),
-                    ]),
-                ], width=2),
-            dbc.Col([
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='ddh_bar',
-                            figure={},
-                            responsive=True,
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                html.Br(),
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='mtoh_bar',
-                            figure={},
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ])
-                    ]),                                
-                ], width=2),
-            dbc.Col([
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='winh_bar',
-                            figure={},
-                            responsive=True,
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                html.Br(),
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='prh_bar',
-                            figure={},
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                ], width=2),
-            dbc.Col([
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='windh_bar',
-                            figure={},
-                            responsive=True,
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                html.Br(),
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='winmh_bar',
-                            figure={},
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                ], width=2),              
+                dcc.Graph(
+                    id = 'multi_histplot',
+                    figure = {},
+                    style={'height':'36vh', 'border-radius': '10px', 'border':'4px solid #ddd'},
+                    )
+                ], width=8),
+
+
+             
             ], style={"margin-right": "15px", "margin-left": "15px"}),
-        ], style = {'background-color': 'rgba(39,83,81,1)'}),
+        ], style = {'background-color': background_img}),
         ),
-    ])
+    ],              style={
+                    'background-image': background_img,  # Specify the path to your image file
+                    'background-size': 'cover',  # Cover the entire container
+                    'background-position': 'center',  # Center the background image
+                    'height': '100vh',  # Set the height to full viewport height
+                    'padding': '30px'  # Add some padding for better visibility of content
+                },
+)
 
 
 
@@ -233,14 +162,7 @@ layout = html.Div([
      Output('maxddh', 'children'),
      Output('winrateh', 'children'),
      Output('prh', 'children'),
-     Output('sharph_bar', 'figure'),
-     Output('toh_bar', 'figure'),
-     Output('ddh_bar', 'figure'),
-     Output('mtoh_bar', 'figure'),
-     Output('winh_bar', 'figure'),
-     Output('prh_bar', 'figure'),
-     Output('windh_bar', 'figure'),
-     Output('winmh_bar', 'figure'),
+     Output('multi_histplot', 'figure'),
      Output('donut', 'figure'),
      ], 
     [
@@ -300,7 +222,7 @@ def update_page2(y2018, y2019, y2020, y2021, y2022, y2023, yall, tf_dd):
     
     hist_plot = plots_generator.generate_histperf(start_date, end_date, plot_title)
     pnlh, sharph, maxddh, winrateh, profitrateh = metrics_generator.generate_hist_metrics(start_date, end_date)
+    multiplot2 = plots_generator.generate_hist_multi_barplot(start_date, end_date, bar_title) 
     donut = plots_generator.generate_donut(tf_dd)
-    bar_sharph, bar_toh, bar_ddh, bar_mtoh, bar_winh, bar_prh, bar_windh, bar_winmh = plots_generator.generate_hist_metrics_bars(start_date, end_date, bar_title)
     
-    return hist_plot, pnlh, sharph, maxddh, winrateh, profitrateh,  bar_sharph, bar_toh, bar_ddh, bar_mtoh, bar_winh, bar_prh, bar_windh, bar_winmh, donut
+    return hist_plot, pnlh, sharph, maxddh, winrateh, profitrateh,  multiplot2, donut

@@ -72,7 +72,7 @@ navbar = html.Div([
         dbc.NavItem(dbc.NavLink('Stocks', href='/stocks', active=True)),
         dbc.NavItem(dbc.NavLink('Description', href='/description', active=True)),
         dbc.NavItem(dbc.NavLink('Reports', href='/report', active=True)),
-    ], pills=True),
+    ], pills=False),
 
     # Heading
     html.H1('Tracking a proxy Russell 1000 Portfolio',

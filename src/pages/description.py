@@ -12,7 +12,7 @@ from config import colors_config, card_config
 
 dash.register_page(__name__)
 
-background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(39,83,81,1))'
+background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(0,0,0,1))'
 
 
 layout =  html.Div(style={'background-image': background_img, 'height': '100vh'},

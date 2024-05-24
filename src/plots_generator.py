@@ -12,6 +12,7 @@ from config import colors_config
 
 import plotly.graph_objects as go
 import plotly.express as px
+from plotly.subplots import make_subplots
 
 def Sharpe(pnl):
     """ Calculate annualised Sharpe Ratio """
@@ -379,7 +380,169 @@ def generate_metrics_bars(start_date, end_date, bar_title):
                         showlegend = False
                         ) 
 
-    return bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm  
+    return bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm
+
+def generate_multi_barplot(start_date, end_date, bar_title):
+    # Function to update graphs based on the selected date range  
+    dfc = df[(df.index >= start_date) & (df.index <= end_date)]
+    
+    # Set dataframe on a daily timeframe
+    dfD = dfc.resample('D').agg({'pnl_u':'sum', 'pnl_c':'sum', 'pnl_cl':'sum', 'betsize_u':'sum', 'betsize_c':'sum', 'betsize_cl':'sum'})
+    dfD = dfD[dfD.pnl_u != 0]  
+    
+    dfM = dfc.resample('M').agg({'pnl_u':'sum', 'pnl_c':'sum', 'pnl_cl':'sum', 'betsize_u':'sum', 'betsize_c':'sum', 'betsize_cl':'sum'})
+ 
+    pnlcols = ['pnl_u', 'pnl_c', 'pnl_cl']
+    sizecols = ['betsize_u', 'betsize_c', 'betsize_cl']
+
+    ir = 0.048  #current IBKR USD rate
+    dfD[pnlcols] = dfD[pnlcols] + ir / 252     
+    dfM[pnlcols] = dfM[pnlcols] + ir / 12     
+    
+    # calculate the Sharpe Ratio
+    sharplist = []
+    for col in pnlcols:
+        sharplist.append(Sharpe(dfD[col]))
+
+    dfsharp = pd.DataFrame([sharplist], columns=['s_u', 's_c', 's_cl'])
+    
+    # dataprep drawdown
+    ddlist = []
+    for col in pnlcols:
+        ddlist.append(DrawDown(dfD[col]))
+    print(ddlist)
+    dfdd = pd.DataFrame([ddlist], columns=['dd_u', 'dd_c', 'dd_cl'])
+
+    # dataprep winrate
+    winlist = []
+    for col in pnlcols:
+        winlist.append(WinRate(dfc[col]))
+    dfwin = pd.DataFrame([winlist], columns=['wr_u', 'wr_c', 'wr_cl'])
+    
+    # dataprep average daily Turnover
+    tolist = []
+    for col in sizecols:
+        tolist.append(TurnOver(dfD[col]))
+    dfto = pd.DataFrame([tolist], columns=['to_u', 'to_c', 'to_cl'])
+    
+    # dataprep average daily Turnover
+    mtolist = []
+    for col in sizecols:
+        mtolist.append((dfD[col].max()))
+    dfmto = pd.DataFrame([mtolist], columns=['mt_u', 'mt_c', 'mt_cl'])
+    
+    #dataprep profitratio
+    profitlist = []
+    for col in pnlcols:
+        profitlist.append(ProfitRatio(dfc[col]))
+    dfprofit = pd.DataFrame([profitlist], columns=['pr_u', 'pr_c', 'pr_cl'])
+    
+    # dataprep the winning days vs the losing days
+    windlist = []
+    for col in pnlcols:
+        windlist.append(WinRate(dfD[col]))
+    dfwind = pd.DataFrame([windlist], columns=['wdr_u', 'wdr_c', 'wdr_cl'])
+
+    # dataprep the winning months vs the losing months
+    winmlist = []
+    for col in pnlcols:
+        winmlist.append(WinRate(dfM[col]))
+    dfwinm = pd.DataFrame([winmlist], columns=['wmr_u', 'wmr_c', 'wmr_cl'])
+    
+    # create BarChart for Sharpe Ratio    
+    bar_sharp = px.bar(dfsharp, x=dfsharp.index, y=['s_u', 's_c', 's_cl'],
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+    
+    bar_dd = px.bar(dfdd, x=dfdd.index, y=['dd_u', 'dd_c', 'dd_cl'],
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+
+    bar_win = px.bar(dfwin, x=dfwin.index, y=['wr_u', 'wr_c', 'wr_cl'],
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )    
+    
+    bar_to = px.bar(dfto, x=dfto.index, y=['to_u', 'to_c', 'to_cl'],
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+    
+    bar_mto = px.bar(dfmto, x=dfmto.index, y=['mt_u', 'mt_c', 'mt_cl'],
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+    
+    bar_pr = px.bar(dfprofit, x=dfprofit.index, y=['pr_u', 'pr_c', 'pr_cl'],
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+    
+    bar_wind = px.bar(dfwind, x=dfwind.index, y=['wdr_u', 'wdr_c', 'wdr_cl'], 
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+
+    bar_winm = px.bar(dfwinm, x=dfwinm.index, y=['wmr_u', 'wmr_c', 'wmr_cl'], 
+                    color_discrete_sequence = colors_config['colors']['palet']
+                     )
+
+    # Create a subplot figure
+    fig = make_subplots(rows=2, cols=4, subplot_titles=(
+        "<b>Sharpe Ratio</b>",
+        "<b>DrawDown %</b>",
+        "<b>WinRate</b>",
+        "<b>Winning Days</b>",
+        "<b>Avg Daily Turnover</b>",
+        "<b>Max Daily Turnover</b>",
+        "<b>ProfitRatio</b>",
+        "<b>Winning Months</b>"
+    ))
+    
+    # Add traces to the subplot
+    fig.add_trace(bar_sharp.data[0], row=1, col=1)
+    fig.add_trace(bar_sharp.data[1], row=1, col=1)
+    fig.add_trace(bar_sharp.data[2], row=1, col=1)
+    
+    fig.add_trace(bar_dd.data[0], row=1, col=2)
+    fig.add_trace(bar_dd.data[1], row=1, col=2)
+    fig.add_trace(bar_dd.data[2], row=1, col=2)
+
+    fig.add_trace(bar_win.data[0], row=1, col=3)
+    fig.add_trace(bar_win.data[1], row=1, col=3)
+    fig.add_trace(bar_win.data[2], row=1, col=3)
+
+    fig.add_trace(bar_wind.data[0], row=1, col=4)
+    fig.add_trace(bar_wind.data[1], row=1, col=4)
+    fig.add_trace(bar_wind.data[2], row=1, col=4)
+    
+    fig.add_trace(bar_to.data[0], row=2, col=1)
+    fig.add_trace(bar_to.data[1], row=2, col=1)
+    fig.add_trace(bar_to.data[2], row=2, col=1)
+    
+    fig.add_trace(bar_mto.data[0], row=2, col=2)
+    fig.add_trace(bar_mto.data[1], row=2, col=2)
+    fig.add_trace(bar_mto.data[2], row=2, col=2)
+
+    fig.add_trace(bar_pr.data[0], row=2, col=3)
+    fig.add_trace(bar_pr.data[1], row=2, col=3)
+    fig.add_trace(bar_pr.data[2], row=2, col=3)
+
+    fig.add_trace(bar_winm.data[0], row=2, col=4)
+    fig.add_trace(bar_winm.data[1], row=2, col=4)
+    fig.add_trace(bar_winm.data[2], row=2, col=4)
+    
+    # Update layout
+    fig.update_layout(showlegend=False)
+    fig.update_layout(plot_bgcolor=colors_config['colors']['bg_figs'],
+                      paper_bgcolor=colors_config['colors']['surround_figs'],
+                      font_color=colors_config['colors']['text'],
+                      font_family=colors_config['colors']['font'],
+                      margin=dict(l=25, r=20, t=20, b=10)  # Minimize margins
+                      )
+    # Set tick format for the y-axis of the bottom-right subplot to percentage
+    fig.update_yaxes(tickformat='.0%', row=1, col=2)
+    fig.update_yaxes(tickformat='.0%', row=1, col=3)
+    fig.update_yaxes(tickformat='.0%', row=1, col=4)
+    fig.update_yaxes(tickformat='.0%', row=2, col=4)
+
+    return fig
+
 
 def generate_hist_metrics_bars(start_date, end_date, bar_title):
     # Function to update graphs based on the selected date range  
@@ -514,9 +677,14 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
                         showlegend = False
                         )
     
+    # multiplot = go.Figure(data=[bar_mto, bar_pr, bar_wind, bar_winm])
+    # multiplot.update_layout(height=600, width=800, title='Multiple Bar Charts')
     bar_mto = px.bar(dfmto, x=dfmto.index, y=['mt_u', 'mt_c', 'mt_cl'], title=f'<b>{bar_title} Max Daily\nTurnover</b>',
                     color_discrete_sequence = colors_config['colors']['palet']
                      )
+
+    
+    
     bar_mto.update_layout(
                         plot_bgcolor=colors_config['colors']['bg_figs'],
                         paper_bgcolor = colors_config['colors']['surround_figs'],
@@ -532,7 +700,7 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
     
     bar_pr = px.bar(dfprofit, x=dfprofit.index, y=['pr_u', 'pr_c', 'pr_cl'], title=f'<b>{bar_title} ProfitRatio</b>',
                     color_discrete_sequence = colors_config['colors']['palet']
-                     )
+                      )
     bar_pr.update_layout(
                         plot_bgcolor=colors_config['colors']['bg_figs'],
                         paper_bgcolor = colors_config['colors']['surround_figs'],
@@ -549,7 +717,7 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
     
     bar_wind = px.bar(dfwind, x=dfwind.index, y=['wdr_u', 'wdr_c', 'wdr_cl'], title=f'<b>{bar_title} Win Days</b>',
                     color_discrete_sequence = colors_config['colors']['palet']
-                     )
+                      )
     bar_wind.update_layout(
                         plot_bgcolor=colors_config['colors']['bg_figs'],
                         paper_bgcolor = colors_config['colors']['surround_figs'],
@@ -564,7 +732,7 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
                         ) 
     bar_winm = px.bar(dfwinm, x=dfwinm.index, y=['wmr_u', 'wmr_c', 'wmr_cl'], title=f'<b>{bar_title} Win Months</b>',
                     color_discrete_sequence = colors_config['colors']['palet']
-                     )
+                      )
     bar_winm.update_layout(
                         plot_bgcolor=colors_config['colors']['bg_figs'],
                         paper_bgcolor = colors_config['colors']['surround_figs'],
@@ -578,8 +746,184 @@ def generate_hist_metrics_bars(start_date, end_date, bar_title):
                         showlegend = False
                         ) 
     
+    # multiplot = go.Figure(data=[bar_pr, bar_winm, bar_wind, bar_sharp])
+    # multiplot.update_layout(height=600, width=800, title='Multiple Bar Charts')
 
-    return bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm  
+    return bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm
+
+def generate_hist_multi_barplot(start_date, end_date, bar_title):
+    # Function to update graphs based on the selected date range  
+    dfc = dfhist[(dfhist.index >= start_date) & (dfhist.index <= end_date)]
+    
+    
+    dfD = dfc.resample('D').agg({'pnl_u':'sum', 'pnl_c':'sum', 'pnl_cl':'sum', 'betsize_u':'sum', 'betsize_c':'sum', 'betsize_cl':'sum'})
+    dfD = dfD[dfD.pnl_u != 0]  
+ 
+    pnlcols = ['pnl_u', 'pnl_c', 'pnl_cl']
+    sizecols = ['betsize_u', 'betsize_c', 'betsize_cl']
+
+    ir = 0.02  #current IBKR USD rate
+    dfD[pnlcols] = dfD[pnlcols] + ir / 252  
+    
+    dfM = dfc.resample('M').agg({'pnl_u':'sum', 'pnl_c':'sum', 'pnl_cl':'sum', 'betsize_u':'sum', 'betsize_c':'sum', 'betsize_cl':'sum'})
+    dfM[pnlcols] = dfM[pnlcols] + ir / 12  
+    
+    dflongs = dfc[pnlcols][dfc.posi == 1]
+    dfshorts = dfc[pnlcols][dfc.posi == -1]
+    
+    # # calculate the Sharpe Ratio
+    # sharplist = []
+    # for col in pnlcols:
+    #     sharplist.append(Sharpe(dfD[col]))
+
+    # dfsharp = pd.DataFrame([sharplist], columns=['s_u', 's_c', 's_cl'])
+    
+    # # dataprep drawdown
+    # ddlist = []
+    # for col in pnlcols:
+    #     ddlist.append(DrawDown(dfD[col]))
+    # dfdd = pd.DataFrame([ddlist], columns=['dd_u', 'dd_c', 'dd_cl'])
+
+    # # dataprep winrate
+    # winlist = []
+    # for col in pnlcols:
+    #     winlist.append(WinRate(dfc[col]))
+    # dfwin = pd.DataFrame([winlist], columns=['wr_u', 'wr_c', 'wr_cl'])
+    
+    # # dataprep average daily Turnover
+    # tolist = []
+    # for col in sizecols:
+    #     tolist.append(TurnOver(dfD[col]))
+    # dfto = pd.DataFrame([tolist], columns=['to_u', 'to_c', 'to_cl'])
+    
+    # # dataprep average daily Turnover
+    # mtolist = []
+    # for col in sizecols:
+    #     mtolist.append((dfD[col].max()))
+    # dfmto = pd.DataFrame([mtolist], columns=['mt_u', 'mt_c', 'mt_cl'])
+    
+    # #dataprep profitratio
+    # profitlist = []
+    # for col in pnlcols:
+    #     profitlist.append(ProfitRatio(dfc[col]))
+    # dfprofit = pd.DataFrame([profitlist], columns=['pr_u', 'pr_c', 'pr_cl'])
+
+    # # dataprep the winning days vs the losing days
+    # windlist = []
+    # for col in pnlcols:
+    #     windlist.append(WinRate(dfD[col]))
+    # dfwind = pd.DataFrame([windlist], columns=['wdr_u', 'wdr_c', 'wdr_cl'])
+
+    # # dataprep the winning months vs the losing months
+    # winmlist = []
+    # for col in pnlcols:
+    #     winmlist.append(WinRate(dfM[col]))
+    # dfwinm = pd.DataFrame([winmlist], columns=['wmr_u', 'wmr_c', 'wmr_cl'])
+    # print(dfwinm)
+    
+    # # dataprep the performance of the long trades
+    # longslist = []
+    # for col in pnlcols:
+    #     longslist.append(dflongs[col].sum())
+    # dflong = pd.DataFrame([longslist], columns=['l_u', 'l_c', 'l_cu'])
+    # print(dflong)
+    
+    # # dataprep the performance of the short trades
+    # shortslist = []
+    # for col in pnlcols:
+    #     shortslist.append(dfshorts[col].sum())
+    # dfshort = pd.DataFrame([shortslist], columns=['sh_u', 'sh_c', 'sh_cu']) 
+       
+    # # Create individual bar charts
+    # bar_sharp = px.bar(dfsharp, y=['s_u', 's_c', 's_cl'], color_discrete_sequence=colors_config['colors']['palet'])
+    # bar_dd = px.bar(dfdd, y=['dd_u', 'dd_c', 'dd_cl'], color_discrete_sequence=colors_config['colors']['palet'])
+    # bar_win = px.bar(dfwin, y=['wr_u', 'wr_c', 'wr_cl'], color_discrete_sequence=colors_config['colors']['palet'])
+    # bar_to = px.bar(dfto, y=['to_u', 'to_c', 'to_cl'], color_discrete_sequence=colors_config['colors']['palet'])
+    # bar_mto = px.bar(dfmto, y=['mt_u', 'mt_c', 'mt_cl'], color_discrete_sequence=colors_config['colors']['palet'])
+    # bar_pr = px.bar(dfprofit, y=['pr_u', 'pr_c', 'pr_cl'], color_discrete_sequence=colors_config['colors']['palet'])
+    # bar_wind = px.bar(dfwind, y=['wdr_u', 'wdr_c', 'wdr_cl'], color_discrete_sequence=colors_config['colors']['palet'])
+    # bar_winm = px.bar(dfwinm, y=['wmr_u', 'wmr_c', 'wmr_cl'], color_discrete_sequence=colors_config['colors']['palet'])
+    # bar_longs = px.bar(dflong, y=['l_u', 'l_c', 'l_cl'], color_discrete_sequence=colors_config['colors']['palet'])
+    # bar_shorts = px.bar(dfshort, y=['sh_u', 'sh_c', 'sh_cl'], color_discrete_sequence=colors_config['colors']['palet'])
+
+    # Data preparation
+    sharplist = [Sharpe(dfD[col]) for col in pnlcols]
+    dfsharp = pd.DataFrame([sharplist], columns=['s_u', 's_c', 's_cl'])
+    
+    ddlist = [DrawDown(dfD[col]) for col in pnlcols]
+    dfdd = pd.DataFrame([ddlist], columns=['dd_u', 'dd_c', 'dd_cl'])
+    
+    winlist = [WinRate(dfc[col]) for col in pnlcols]
+    dfwin = pd.DataFrame([winlist], columns=['wr_u', 'wr_c', 'wr_cl'])
+    
+    tolist = [TurnOver(dfD[col]) for col in sizecols]
+    dfto = pd.DataFrame([tolist], columns=['to_u', 'to_c', 'to_cl'])
+    
+    mtolist = [dfD[col].max() for col in sizecols]
+    dfmto = pd.DataFrame([mtolist], columns=['mt_u', 'mt_c', 'mt_cl'])
+    
+    profitlist = [ProfitRatio(dfc[col]) for col in pnlcols]
+    dfprofit = pd.DataFrame([profitlist], columns=['pr_u', 'pr_c', 'pr_cl'])
+    
+    windlist = [WinRate(dfD[col]) for col in pnlcols]
+    dfwind = pd.DataFrame([windlist], columns=['wdr_u', 'wdr_c', 'wdr_cl'])
+    
+    winmlist = [WinRate(dfM[col]) for col in pnlcols]
+    dfwinm = pd.DataFrame([winmlist], columns=['wmr_u', 'wmr_c', 'wmr_cl'])
+    
+    longslist = [dflongs[col].sum() for col in pnlcols]
+    dflong = pd.DataFrame([longslist], columns=['l_u', 'l_c', 'l_cl'])
+    
+    shortslist = [dfshorts[col].sum() for col in pnlcols]
+    dfshort = pd.DataFrame([shortslist], columns=['s_u', 's_c', 's_cl'])
+
+    # Colors
+    colors = colors_config['colors']['palet']
+
+    # Create individual bar charts
+    bar_charts = []
+    dataframes = [dfsharp, dfdd, dfwin, dfwind, dflong, dfto, dfmto, dfprofit, dfwinm, dfshort]
+    
+    for i, df in enumerate(dataframes):
+        bar_chart = px.bar(df.T.reset_index(), x='index', y=0, 
+                           color_discrete_sequence=colors)
+        bar_charts.append(bar_chart)   
+        
+    # Create a subplot figure
+    fig = make_subplots(rows=2, cols=5, subplot_titles=[
+        "Sharpe Ratio", "DrawDown %", "WinRate", "Winning Days", "Performance Longs", "Avg Daily Turnover",
+        "Max Daily Turnover", "ProfitRatio", "Winning Months", "Performance Shorts"
+    ])
+    
+        # Helper function to add traces from a bar chart to the subplot
+    def add_bar_traces(bar_chart, row, col):
+        for trace in bar_chart.data:
+            fig.add_trace(trace, row=row, col=col)
+    
+    # Add traces to the subplot
+    for i, bar_chart in enumerate(bar_charts):
+        row = 1 if i < 5 else 2
+        col = i % 5 + 1
+        add_bar_traces(bar_chart, row, col)
+
+    # Update layout
+    fig.update_layout(showlegend=False)
+    fig.update_layout(plot_bgcolor=colors_config['colors']['bg_figs'],
+                      paper_bgcolor=colors_config['colors']['surround_figs'],
+                      font_color=colors_config['colors']['text'],
+                      font_family=colors_config['colors']['font'],
+                      barmode = 'group',
+                      margin=dict(l=25, r=20, t=20, b=10))  # Minimize margins
+
+    # Set tick format for the y-axis of the bottom-right subplot to percentage
+    fig.update_yaxes(tickformat='.0%', row=1, col=2)
+    fig.update_yaxes(tickformat='.0%', row=1, col=3)
+    fig.update_yaxes(tickformat='.0%', row=1, col=4)
+    fig.update_yaxes(tickformat='.1%', row=1, col=5)
+    fig.update_yaxes(tickformat='.0%', row=2, col=4)
+    fig.update_yaxes(tickformat='.1%', row=2, col=5)
+    
+    return fig
 
 
 
@@ -653,7 +997,10 @@ def generate_donut(selected_tf):
                         title = {'font':{'size':18} },
                         showlegend = True
                         )
-    donut.update_traces(textinfo='label+value')
+    donut.update_traces(textinfo='label+value',
+                        texttemplate='%{label}: %{value:.2%}',  # Format text as label: percentage
+                        hovertemplate='%{label}: %{value:.2%}',  # Format hover text as label: percentage
+                        )
     return donut
 
 def generate_individual_stock_graph(ticker, start_date):

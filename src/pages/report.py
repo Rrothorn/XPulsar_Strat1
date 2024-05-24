@@ -61,7 +61,7 @@ table1_columns = [
 
 dash.register_page(__name__)
 
-background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(39,83,81,1))'
+background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(0,0,0,1))'
 
 layout = html.Div(
             style={

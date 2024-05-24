@@ -25,7 +25,7 @@ fname = 'DC_2024trades.csv'
 df = pd.read_csv(f'../{fname}', parse_dates = ['date'], index_col = 'date')
 legend_labels = {'pnl_u': 'All-in', 'pnl_c': 'Conditional', 'pnl_cl': 'Leveraged'}
 
-background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(39,83,81,1))'
+background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(0,0,0,1))'
 colors = {
     'bg_figs': '#FFFFFF',
     "surround_figs": '#5B706F',
@@ -35,7 +35,15 @@ colors = {
     }
 
 
-layout = html.Div([
+layout = html.Div(
+            style={
+                'background-image': background_img,  # Specify the path to your image file
+                'background-size': 'cover',  # Cover the entire container
+                'background-position': 'center',  # Center the background image
+                'height': '100vh',  # Set the height to full viewport height
+                'padding': '30px'  # Add some padding for better visibility of content
+            },
+    children = [
     dbc.Card(
         dbc.CardBody([
             dbc.Row([
@@ -141,7 +149,7 @@ layout = html.Div([
                         dcc.Graph(
                             id= 'targetplot',
                             figure={},
-                            style={'height':'25vh', 'border-radius': '15px', 'border':'4px solid #C0C0C0'}
+                            style={'height':'27vh', 'border-radius': '15px', 'border':'4px solid #C0C0C0'}
                             ),
                         ]),
                     ]),
@@ -156,101 +164,24 @@ layout = html.Div([
                 dcc.Graph(
                     figure = plots_generator.generate_month_bars(),
                     responsive=True,
-                    style={'height':'34vh', 'border-radius': '10px', 'border':'4px solid #ddd'},
+                    style={'height':'40vh', 'border-radius': '10px', 'border':'4px solid #ddd'},
                     ),               
-                ], width = 4),
+                ], width = 5),
             dbc.Col([
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='sharp_bar',
-                            figure={},
-                            responsive=True,
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
+                html.Div([
+                    dcc.Graph(
+                        id='multiplot',
+                        figure = {},
+                        style={'height':'40vh','border-radius': '10px', 'border':'4px solid #ddd'},    
+                        )
                     ]),
-                html.Br(),
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='to_bar',
-                            figure={},
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ), 
-                        ]),
-                    ]),
-                ], width=2),
-            dbc.Col([
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='dd_bar',
-                            figure={},
-                            responsive=True,
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                html.Br(),
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='mto_bar',
-                            figure={},
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ])
-                    ]),                                
-                ], width=2),
-            dbc.Col([
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='win_bar',
-                            figure={},
-                            responsive=True,
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                html.Br(),
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='pr_bar',
-                            figure={},
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                ], width=2),
-            dbc.Col([
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='windays_bar',
-                            figure={},
-                            responsive=True,
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                html.Br(),
-                dbc.Row([
-                    html.Div([
-                        dcc.Graph(
-                            id='winmonths_bar',
-                            figure={},
-                            style={'height':'17vh', 'border-radius': '10px', 'border':'4px solid #ddd'}
-                            ),
-                        ]),
-                    ]),
-                ], width=2),                        
+                ], width=6),                       
             ], style={"margin-right": "15px", "margin-left": "15px"}),
-        ], style = {'background-color': 'rgba(39,83,81,1)'}),
+        ], style = {'background-image': background_img,}  # Specify the path to your image file
+        )
         ),
     ])
+
 
 
 @callback(
@@ -262,14 +193,15 @@ layout = html.Div([
     Output('maxdd', 'children'),
     Output('winrate', 'children'),
     Output('pr', 'children'),
-    Output('sharp_bar', 'figure'),
-    Output('dd_bar', 'figure'),
-    Output('win_bar', 'figure'),
-    Output('to_bar', 'figure'),
-    Output('mto_bar', 'figure'),
-    Output('pr_bar', 'figure'),
-    Output('windays_bar', 'figure'),
-    Output('winmonths_bar', 'figure')
+#    Output('sharp_bar', 'figure'),
+#    Output('dd_bar', 'figure'),
+#    Output('win_bar', 'figure'),
+#    Output('to_bar', 'figure'),
+#    Output('mto_bar', 'figure'),
+#    Output('pr_bar', 'figure'),
+#    Output('windays_bar', 'figure'),
+#    Output('winmonths_bar', 'figure'),
+    Output('multiplot', 'figure')
     ],
     [
     Input('date-range-picker', 'start_date'),
@@ -308,7 +240,7 @@ def update_page1(start_date, end_date, mtd, qtd, ytd):
     
     figln, fig_target = plots_generator.generate_perf_plot1(start_date, end_date, figln_title, target) 
     pnl, sharp, maxdd, winrate, pr = metrics_generator.generate_metrics(start_date, end_date)
-    bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm = plots_generator.generate_metrics_bars(start_date, end_date, bar_title)
+#    bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm = plots_generator.generate_metrics_bars(start_date, end_date, bar_title)
+    multiplot = plots_generator.generate_multi_barplot(start_date, end_date, bar_title)
     
-    
-    return figln, fig_target, pnl, sharp, maxdd, winrate, pr, bar_sharp, bar_dd, bar_win, bar_to, bar_mto, bar_pr, bar_wind, bar_winm
+    return figln, fig_target, pnl, sharp, maxdd, winrate, pr, multiplot
