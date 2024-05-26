@@ -540,6 +540,12 @@ def generate_multi_barplot(start_date, end_date, bar_title):
     fig.update_yaxes(tickformat='.0%', row=1, col=3)
     fig.update_yaxes(tickformat='.0%', row=1, col=4)
     fig.update_yaxes(tickformat='.0%', row=2, col=4)
+    
+    # Emptying x-axis values
+    for i in range(8):
+        row = 1 if i < 4 else 2
+        col = i % 4 + 1    
+        fig.update_xaxes(showticklabels=False, row=row, col=col)  
 
     return fig
 
@@ -913,7 +919,8 @@ def generate_hist_multi_barplot(start_date, end_date, bar_title):
                       font_color=colors_config['colors']['text'],
                       font_family=colors_config['colors']['font'],
                       barmode = 'group',
-                      margin=dict(l=25, r=20, t=20, b=10))  # Minimize margins
+                      margin=dict(l=25, r=20, t=20, b=10),
+                      )  # Minimize margins
 
     # Set tick format for the y-axis of the bottom-right subplot to percentage
     fig.update_yaxes(tickformat='.0%', row=1, col=2)
@@ -922,6 +929,11 @@ def generate_hist_multi_barplot(start_date, end_date, bar_title):
     fig.update_yaxes(tickformat='.1%', row=1, col=5)
     fig.update_yaxes(tickformat='.0%', row=2, col=4)
     fig.update_yaxes(tickformat='.1%', row=2, col=5)
+    
+    for i in range(10):
+        row = 1 if i < 5 else 2
+        col = i % 5 + 1    
+        fig.update_xaxes(showticklabels=False, row=row, col=col)    
     
     return fig
 
@@ -1040,7 +1052,6 @@ def generate_bestinhistory_bar(selected_strat):
     dftop10 = dftop10.reset_index()
     dftop10 = dftop10.rename(columns={'ticker':'Top10', strat:'Top_PnL'})
     dftop10 = dftop10.sort_values(by='Top_PnL', ascending=True)
-    print(dftop10)
     
     dfworst10 = dfc.groupby('ticker')[strat].sum().sort_values(ascending=True).head(10)
     dfworst10 = dfworst10.reset_index()
@@ -1055,7 +1066,7 @@ def generate_bestinhistory_bar(selected_strat):
                       orientation='h', color='Top10', color_discrete_sequence=colors1)
 
     bar_best.update_layout(
-                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        plot_bgcolor= '#000000',
                         paper_bgcolor = colors_config['colors']['surround_figs'],
                         font_color = colors_config['colors']['text'],
                         font_family = colors_config['colors']['font'],
@@ -1069,7 +1080,7 @@ def generate_bestinhistory_bar(selected_strat):
                       orientation='h', color='Worst10', color_discrete_sequence=colors1)
 
     bar_worst.update_layout(
-                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        plot_bgcolor= '#000000',
                         paper_bgcolor = colors_config['colors']['surround_figs'],
                         font_color = colors_config['colors']['text'],
                         font_family = colors_config['colors']['font'],

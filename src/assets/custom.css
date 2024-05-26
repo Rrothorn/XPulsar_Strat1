@@ -1,0 +1,107 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat May 25 00:04:20 2024
+
+@author: Gebruiker
+"""
+
+/* custom.css */
+
+/* Change the background color of the navbar */
+.nav-item {
+    background-color: #8D908C !important; /* Dark background  CONTROLLAS BACGROUND OF AREA AROUND NAVLINKS ONLY */
+}
+
+.navbar .nav-item {
+    background-color: #000000 !important;
+}
+
+/* Change the color of the brand/logo */
+
+.navbar .navbar-brand {
+    color: green !important; /* Yellow text */
+}
+
+/* Change the color of the navbar links */
+.nav-item .nav-link {
+    color: #A2A5A1 !important; /* White text */
+}
+
+/* Change the color of the navbar links */
+.navbar .nav-link: link {
+    color: #FFFFFF !important; /* Change to desired color */
+}
+
+/* Optional: Change the color of the links on hover */
+.navbar .nav-link:hover {
+    color: white !important; /* Yellow text on hover Correct */
+}
+
+/* Optional: Change the color of the links on hover */
+.navbar .nav-link:active {
+    color: yellow !important; /* Yellow text on hover Correct */
+}
+
+/* Change the background color of the navbar */
+.navbar {
+    background-color: #000000 !important; /* Dark background  FOR SOME REASON THE BACKGROUND LOCATION NEEDS TO BE AFTER THE OTHER NAVBAR CSS */ 
+}
+
+/* Custom styles for primary button */
+.btn-primary {
+    background-color: #0C2930  !important; /* Custom green background */
+    border-color: #000000  !important; /* Custom green border */
+    color: white !important; /* White text */
+}
+
+/* Hover state for primary button */
+.btn-primary:hover {
+    background-color: #497F7C !important; /* Darker green background on hover */
+    border-color: #45A049 !important; /* Darker green border on hover */
+    color: white !important; /* White text */
+}
+
+/* Custom styles for secondary button */
+.btn-secondary {
+    background-color: #FF5733 !important; /* Custom orange background */
+    border-color: #FF5733 !important; /* Custom orange border */
+    color: white !important; /* White text */
+}
+
+/* Hover state for secondary button */
+.btn-secondary:hover {
+    background-color: #FF4500 !important; /* Darker orange background on hover */
+    border-color: #FF4500 !important; /* Darker orange border on hover */
+    color: white !important; /* White text */
+}
+
+/* Custom styles for success button */
+.btn-success {
+    background-color: #5bc0de !important; /* Custom cyan background */
+    border-color: #5bc0de !important; /* Custom cyan border */
+    color: white !important; /* White text */
+}
+
+/* Hover state for success button */
+.btn-success:hover {
+    background-color: #46b8da !important; /* Darker cyan background on hover */
+    border-color: #46b8da !important; /* Darker cyan border on hover */
+    color: white !important; /* White text */
+}
+
+/* Custom styles for danger button */
+.btn-danger {
+    background-color: #d9534f !important; /* Custom red background */
+    border-color: #d9534f !important; /* Custom red border */
+    color: white !important; /* White text */
+}
+
+/* Hover state for danger button */
+.btn-danger:hover {
+    background-color: #c9302c !important; /* Darker red background on hover */
+    border-color: #c9302c !important; /* Darker red border on hover */
+    color: white !important; /* White text */
+}
+
+
+

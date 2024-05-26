@@ -19,7 +19,7 @@ from config import colors_config, card_config
 
 dash.register_page(__name__)
 
-background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(0,0,0,1))'
+background_img = 'linear-gradient(to left, rgba(39,83,81,0.75), rgba(0,0,0,1))'
 #pie_dict = {'Monthly':total_monthlies, 'Quarterly':total_quarterlies}
 
 dropdown_values = {
@@ -27,7 +27,15 @@ dropdown_values = {
     }
 
 
-layout = html.Div([
+layout = html.Div(
+            style={
+                  'background-image': background_img,  # Specify the path to your image file
+                  'background-size': 'cover',  # Cover the entire container
+                  'background-position': 'center',  # Center the background image
+                  'height': '100vh',  # Set the height to full viewport height
+                  'padding': '0px'  # Add some padding for better visibility of content
+                  },
+    children = [
 
     dbc.Card(
         dbc.CardBody([
@@ -141,15 +149,9 @@ layout = html.Div([
 
              
             ], style={"margin-right": "15px", "margin-left": "15px"}),
-        ], style = {'background-color': background_img}),
+        ], style = {'background-image': background_img}),
         ),
-    ],              style={
-                    'background-image': background_img,  # Specify the path to your image file
-                    'background-size': 'cover',  # Cover the entire container
-                    'background-position': 'center',  # Center the background image
-                    'height': '100vh',  # Set the height to full viewport height
-                    'padding': '30px'  # Add some padding for better visibility of content
-                },
+    ],            
 )
 
 

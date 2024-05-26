@@ -42,7 +42,7 @@ import dash
 from dash import Dash, html, dcc
 from config import colors_config
 import dash_bootstrap_components as dbc
-
+import os
 
 # =============================================================================
 #  Initialising the Dash app 
@@ -51,42 +51,30 @@ import dash_bootstrap_components as dbc
 #  include assets folder to direct to images and CSS files
 # 
 # =============================================================================
+assets_path = os.getcwd() + '/assets'
 app = Dash(__name__, use_pages=True, external_stylesheets=
-           [dbc.themes.SLATE,
+           [dbc.themes.BOOTSTRAP,
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css'
-            ], suppress_callback_exceptions=True, assets_folder='../assets')
+            ], suppress_callback_exceptions=True, assets_folder=assets_path)
 server = app.server   # required for publishing
 
 ######################  NAVIGATION BAR #################################
 
 # Define the navigation bar
-navbar = html.Div([
-    html.Div([
-        html.Img(src='/assets/xpulsar-logo.png', height='120px', style={'float': 'right', 'margin-top': '3px', 'margin-right': '20px'}),
-    ], style={'width': '100%'}),  # Ensures the logo stays on the same line as the navigation links
+# navbar = html.Div([
+#     html.Div([
+#         html.Img(src = assets_path + '/xpulsar-logo.png', height='120px', style={'float': 'right', 'margin-top': '3px', 'margin-right': '20px'}),
+#     ], style={'width': '100%'}),  # Ensures the logo stays on the same line as the navigation links
 
-    # Navigation links
-    dbc.Nav([
-        dbc.NavItem(dbc.NavLink('Main', href='/', active=True)),
-        dbc.NavItem(dbc.NavLink('Historical', href='/historical', active=True)),
-        dbc.NavItem(dbc.NavLink('Stocks', href='/stocks', active=True)),
-        dbc.NavItem(dbc.NavLink('Description', href='/description', active=True)),
-        dbc.NavItem(dbc.NavLink('Reports', href='/report', active=True)),
-    ], pills=False),
+#     # Navigation links
+#     dbc.Nav([
+#         dbc.NavItem(dbc.NavLink('Main', href='/', active=True)),
+#         dbc.NavItem(dbc.NavLink('Historical', href='/historical', active=True)),
+#         dbc.NavItem(dbc.NavLink('Stocks', href='/stocks', active=True)),
+#         dbc.NavItem(dbc.NavLink('Description', href='/description', active=True)),
+#         dbc.NavItem(dbc.NavLink('Reports', href='/report', active=True)),
+#     ], pills=False),
 
-    # Heading
-    html.H1('Tracking a proxy Russell 1000 Portfolio',
-            className='text-center text-primary, mb-2',
-            style={'font-size': '28px',
-                   'color': colors_config['colors']['palet'][4],
-                   'margin_bottom': '0px',
-                   'width': '100%'  # Span the entire width
-                   }),
-    html.H2('An AI-powered Daily Machine Learning algorithm',
-            className='text-center text-primary, mb-4',
-            style={'font-size': '18px', 'color': colors_config['colors']['palet'][4], 'width': '100%'}),  # Span the entire width
-],
-)
 
 ##################### FOOTER  ################################
 #define footer
@@ -109,11 +97,52 @@ footer =     html.Footer([
 
 ######################### LAYOUT of APP  and RUN ###############################
 
-app.layout = html.Div([
-    navbar,
-    dash.page_container,
-    footer
-])
+# Define the layout
+app.layout = dbc.Container([
+    dbc.Navbar(
+        dbc.Container([
+            # Nav items on the left
+            dbc.Row([
+
+                dbc.Col([
+                    dbc.NavItem(dbc.NavLink("Main", href="/", active=True), style = {'margin-left':'20px'}),
+                    dbc.NavItem(dbc.NavLink("Historical", href="/historical", active=True)),
+                    dbc.NavItem(dbc.NavLink('Stocks', href='/stocks', active=True)),
+                    dbc.NavItem(dbc.NavLink('Description', href='/description', active=True)),
+                    dbc.NavItem(dbc.NavLink('Report', href='/report', active=True)),
+                ], className= 'hstack gap-3'),
+            ], className="g-10"),  # Use className="g-0" to remove gutter spacing between columns
+            dbc.Col([
+                html.Div([
+                    # Heading
+                    html.H1('Tracking a proxy Russell 1000 Portfolio',
+                            className='text-center text-primary, mb-2',
+                            style={'font-size': '28px',
+                                    'color': colors_config['colors']['palet'][4],
+                                    'margin_bottom': '0px',
+                                    'width': '100%'  # Span the entire width
+                                    }),
+                    html.H2('An AI-powered Daily Machine Learning algorithm',
+                            className='text-center text-primary, mb-4',
+                            style={'font-size': '18px', 'color': colors_config['colors']['palet'][4], 'width': '100%'}),  # Span the entire width
+                    ],),
+                ], 
+                width = 'auto',
+                className="d-flex justify-content-center align-items-center",  # Center horizontally and vertically
+                ),            
+            
+            # Logo on the right
+            dbc.Col([
+                html.Div([
+                    html.Img(src='assets/xpulsar-logo.png', height='100vh', style={'float': 'right', 'margin-top': '3px', 'margin-right': '20px'}),
+                ], style={'width': '100%'})
+            ], width=2, className="ml-auto"),  # Use className="ml-auto" to push the logo to the right
+        ], fluid=True),
+        dark=True,          # Use dark theme for the navbar
+    ),
+    dash.page_container,  # Placeholder for page content
+    footer, # Placeholder for footer component
+], fluid=True)  # Make the container full-width
 
 if __name__ == '__main__':
     app.run(debug=True, port=8031)

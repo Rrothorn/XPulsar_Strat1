@@ -25,7 +25,7 @@ fname = 'DC_2024trades.csv'
 df = pd.read_csv(f'../{fname}', parse_dates = ['date'], index_col = 'date')
 legend_labels = {'pnl_u': 'All-in', 'pnl_c': 'Conditional', 'pnl_cl': 'Leveraged'}
 
-background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(0,0,0,1))'
+background_img = 'linear-gradient(to left, rgba(39,83,81,0.75), rgba(0,0,0,1))'
 colors = {
     'bg_figs': '#FFFFFF',
     "surround_figs": '#5B706F',
@@ -41,7 +41,7 @@ layout = html.Div(
                 'background-size': 'cover',  # Cover the entire container
                 'background-position': 'center',  # Center the background image
                 'height': '100vh',  # Set the height to full viewport height
-                'padding': '30px'  # Add some padding for better visibility of content
+  #              'padding': '30px'  # Add some padding for better visibility of content
             },
     children = [
     dbc.Card(

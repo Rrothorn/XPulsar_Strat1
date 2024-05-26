@@ -7,7 +7,8 @@ Created on Sun May  5 23:16:38 2024
 
 colors_config= {
     'colors' : {
-        'bg_figs': '#433F3B',
+        'bg_figs': '#1D2322',
+   #     'bg_figs': '#433F3B',
         "surround_figs": '#5B706F',
         'text': '#7FDBFF',
         'font': 'Verdana',

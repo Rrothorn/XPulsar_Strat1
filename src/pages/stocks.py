@@ -23,25 +23,37 @@ import plots_generator
 import metrics_generator
 from config import colors_config, card_config
 
-# # Function to create the gauge plot
-def create_gauge(prediction):
-    if prediction < -0.3:
+def get_fill_color(sentiment):
+    if sentiment == 'STRONG SELL':
+        fill_color = '#7C291D'
+    elif sentiment == 'SELL':
         fill_color = '#C84835'
-        titletext = 'SELL'
-    elif prediction > 0.3:
-        fill_color = '#2D8045'
-        titletext = 'BUY'
+    elif sentiment == 'STRONG BUY':
+        fill_color = '#1C5A2E'
+    elif sentiment == 'BUY':
+        fill_color ==  '#32904D'
+    elif sentiment == 'NEUTRAL':
+        fill_color = 'lightblue'
+    elif sentiment == 'None':
+        fill_color = 'gray'
+    return fill_color
+
+def get_change_color(last_change):
+    if last_change < 0:
+        change_color = "red"
+    elif last_change > 0:
+        change_color = 'green'
     else:
-        fill_color = '#CECE3D'
-        titletext = 'NEUTRAL'
+        change_color = 'gray'
+    return change_color
+
+# # Function to create the gauge plot
+def create_gauge(prediction, fill_color):
     
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=prediction,
         number={'valueformat': '.2%'},
-        title = {'text': f'{titletext} Actual vs Target',
-                 'font': {'color': '#FFFFFF'},
-                 },
         gauge={
             'axis': {'range': [-1, 1], 'tickformat':',.0%'},
             'bar': {'color': fill_color},
@@ -98,7 +110,7 @@ table1_columns = [
 
 dash.register_page(__name__)
 
-background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(0,0,0,1))'
+background_img = 'linear-gradient(to left, rgba(39,83,81,0.75), rgba(0,0,0,1))'
 
 layout = html.Div(
             style={
@@ -123,7 +135,7 @@ layout = html.Div(
             dbc.Col([
                 dcc.Dropdown(id='my_dpdn',
                               multi=False, 
-                              value='BBWI', 
+                              value='RBA', 
                               options=[{'label':x, 'value':x} for x in sorted(df['ticker'].unique())],
                               style={'border-radius': '15px'}
                               ),
@@ -240,10 +252,25 @@ def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
     row = dfmeta[dfmeta['ticker'] == selected_stock].iloc[0]
     
     status_color = "green" if row['Status'] == 'Active' else "red"
+    if row['Status'] == 'Inactive':
+        row['Sentiment'] = 'None'
+    fill_color = get_fill_color(row['Sentiment'])
+    change_color = 'green'
+#    change_color = get_change_color(row['Last Change'])
     
     card_content = [
         html.H4(f"{selected_stock}, {row['Name']}", className="card-title"),
-        html.H6(f"Last Close: ${row['Last Close']}, YTD: {row['YTD']}", className="card-subtitle"),
+        html.H6(
+            [
+                f"Last Close: ${row['Last Close']}  ,",
+                html.Span(
+                    row['Last Change'],
+                    style={'color': change_color}
+                ),
+                f",  YTD: {row['YTD']}"
+            ],
+            className="card-subtitle"
+        ),
         html.Hr(style={'borderTop': '1px dashed white'}),
         dbc.Row([
             dbc.Col([
@@ -263,7 +290,9 @@ def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
                 html.P(f"Avg Daily Volume: {row['Avg_Daily_Volume']}"),
                 html.Hr(),
                 html.H6(f"Sentiment {row['Next Day']}", className="card-subtitle"),
-                dcc.Graph(figure=create_gauge(row['Prediction']), config={'displayModeBar': False})
+                html.Span(row['Sentiment'], className = "card-subtitle", style={'color': fill_color, 'font-weight': 'bold'}),
+                html.Hr(),
+                dcc.Graph(figure=create_gauge(row['Prediction'], fill_color), config={'displayModeBar': False})
             ], width=6)
         ]),
         html.Div([

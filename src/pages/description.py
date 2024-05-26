@@ -12,7 +12,8 @@ from config import colors_config, card_config
 
 dash.register_page(__name__)
 
-background_img = 'linear-gradient(to left, rgba(39,83,81,0.5), rgba(0,0,0,1))'
+background_img = 'linear-gradient(to left, rgba(0,0,0,1), rgba(39,83,81,0.9))'
+background_img_cards = 'linear-gradient(to left, rgba(39,83,81,0.9), rgba(0,0,0,1))'
 
 
 layout =  html.Div(style={'background-image': background_img, 'height': '100vh'},
@@ -41,6 +42,7 @@ layout =  html.Div(style={'background-image': background_img, 'height': '100vh'}
                            'border-radius': '14px',
                            'border':'4px solid #ddd',
                            'font-size':'15px',
+                           'background-image': background_img_cards,
                            }
                     )
 
@@ -61,7 +63,12 @@ layout =  html.Div(style={'background-image': background_img, 'height': '100vh'}
                                style={'color':'#95D7E0'},
                                ),
                         ]),
-                    style={'margin-left':'60px', 'border-radius': '14px', 'border':'4px solid #ddd', 'font-size':'15px'}
+                    style={'margin-left':'60px',
+                           'border-radius': '14px',
+                           'border':'4px solid #ddd',
+                           'font-size':'15px',
+                           'background-image': background_img_cards,
+                           }
                     )
 
                 ], width = 5),
@@ -85,7 +92,12 @@ layout =  html.Div(style={'background-image': background_img, 'height': '100vh'}
                                style={'color': '#95D7E0'}
                                ),
                         ]),
-                    style={'margin-left':'60px', 'border-radius': '10px', 'border':'4px solid #ddd', 'font-size':'15px'}
+                    style={'margin-left':'60px',
+                           'border-radius': '10px',
+                           'border':'4px solid #ddd',
+                           'font-size':'15px',
+                           'background-image': background_img_cards,
+                           }
                     ),
                 ], width = 5),
             
