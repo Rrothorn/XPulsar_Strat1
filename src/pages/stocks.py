@@ -31,7 +31,7 @@ def get_fill_color(sentiment):
     elif sentiment == 'STRONG BUY':
         fill_color = '#1C5A2E'
     elif sentiment == 'BUY':
-        fill_color ==  '#32904D'
+        fill_color =  '#32904D'
     elif sentiment == 'NEUTRAL':
         fill_color = 'lightblue'
     elif sentiment == 'None':
@@ -46,6 +46,13 @@ def get_change_color(last_change):
     else:
         change_color = 'gray'
     return change_color
+
+# Helper function to format change value
+def format_change(last_change):
+    sign = "+" if last_change > 0 else ""
+    triangle = "▲" if last_change > 0 else "▼"
+    last_change = round(100 * last_change, 2)
+    return f"{triangle}{sign}{last_change}%"
 
 # # Function to create the gauge plot
 def create_gauge(prediction, fill_color):
@@ -81,6 +88,27 @@ def create_gauge(prediction, fill_color):
                       font_color = colors_config['colors']['text'],
                       )
     return fig
+
+def create_bar(df):
+    
+    fig = px.bar(df, x = df.index, y= df.columns, title = 'All Time Historical Performance',
+                       color_discrete_sequence = colors_config['colors']['palet']
+                      )
+    fig.update_layout(
+                        plot_bgcolor=colors_config['colors']['bg_figs'],
+                        paper_bgcolor = '#000000',
+                        font_color = colors_config['colors']['text'],
+                        font_family = colors_config['colors']['font'],
+                        barmode = 'group',
+                        margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
+                        height = 150,
+                        title = {'font':{'size':14}, 'x':0.5 },
+                        xaxis = {'title':''},
+                        yaxis = {'title':'', 'tickformat':',.2%'},
+                        showlegend = False
+                        ) 
+    return fig
+    
 
 # donwloading data
 fname = 'DC_2024trades.csv'
@@ -255,19 +283,24 @@ def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
     if row['Status'] == 'Inactive':
         row['Sentiment'] = 'None'
     fill_color = get_fill_color(row['Sentiment'])
-    change_color = 'green'
-#    change_color = get_change_color(row['Last Change'])
+    change_color = get_change_color(row['Last Change'])
+    ytd_color = get_change_color(row['YTD'])
+    
     
     card_content = [
-        html.H4(f"{selected_stock}, {row['Name']}", className="card-title"),
+        html.H4(f"{selected_stock}, {row['Name']}", className="card-title", style={'color': '#36D0B7'}),
         html.H6(
             [
-                f"Last Close: ${row['Last Close']}  ,",
+                f"Last Close: ${row['Last Close']}  ,  ",
                 html.Span(
-                    row['Last Change'],
+                    format_change(row['Last Change']),
                     style={'color': change_color}
                 ),
-                f",  YTD: {row['YTD']}"
+                ",  YTD:",
+                html.Span(
+                    format_change(row['YTD']),
+                    style = {'color': ytd_color},
+                    ),
             ],
             className="card-subtitle"
         ),
@@ -280,7 +313,9 @@ def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
                 html.P(f"EPS: {row['EPS']}"),
                 html.P(f"Net Income: {row['Net Income']}"),
                 html.P(f"P/E Ratio: {row['P/E Ratio']}"),
-                html.P(f"Div Yield: {row['Div Yield']}")
+                html.P(f"Div Yield: {row['Div Yield']}"),
+                html.Hr(),
+                dcc.Graph(figure=create_bar(dfmeta[dfmeta['ticker'] == selected_stock][['All-Time AI', 'All-Time Cond', 'All-Time Lvg']]))
             ], width=6),
             dbc.Col([
                 html.H6("Market Quantitatives", className="card-subtitle", style={'color':colors_config['colors']['text'], 'font-weight': 'underline'}),
