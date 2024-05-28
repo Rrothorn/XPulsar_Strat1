@@ -23,6 +23,26 @@ import plots_generator
 import metrics_generator
 from config import colors_config, card_config
 
+# =============================================================================
+# This page contains information about the individual performance of stocks active
+# within this running year.
+# Interactivitiy comes from selected stock (dropdown),the time periods MTD, QTD, YTD (buttons) 
+# and selected strategy (dropdown).
+#
+# It has 1) a Line Graph showing the performance of individual stocks 
+#        2) a Table showing the top12 and worst12 stocks of the selected time period and strategy
+#        3) a Card showing fundamental and market data info and 2 graphs,
+#           one a barchart with all time performance and one a gauge chart to show sentiment
+#        4) 2 Barcharts showing the top 10 and worst 10 stocks performance of all time
+# 
+# The page has 1 row only containing 3 columns
+# Column 1 has time period buttons
+# Column 2 has dropdown for stocks, the line graph, dropdown for strategy and the table
+# Column 3 has the Card and 2 barcharts 
+# 
+# =============================================================================
+
+#helper functions for coloring and formatting
 def get_fill_color(sentiment):
     if sentiment == 'STRONG SELL':
         fill_color = '#7C291D'
@@ -47,68 +67,11 @@ def get_change_color(last_change):
         change_color = 'gray'
     return change_color
 
-# Helper function to format change value
 def format_change(last_change):
     sign = "+" if last_change > 0 else ""
     triangle = "▲" if last_change > 0 else "▼"
     last_change = round(100 * last_change, 2)
     return f"{triangle}{sign}{last_change}%"
-
-# # Function to create the gauge plot
-def create_gauge(prediction, fill_color):
-    
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=prediction,
-        number={'valueformat': '.2%'},
-        gauge={
-            'axis': {'range': [-1, 1], 'tickformat':',.0%'},
-            'bar': {'color': fill_color},
-            'bar': {'thickness': 0},            
-            'bgcolor': "white",
-            'borderwidth': 2,
-            'bordercolor': "gray",
-            'steps': [
-                {'range': [-1, -0.3], 'color': '#F5A490' },
-                {'range': [-0.3, 0.3], 'color': '#F5ED90'},
-                {'range': [0.3, 1], 'color': '#A7F590'},
-                {'range': [0, prediction], 'color': fill_color, 'thickness': 0.8},
-            ],
-            'threshold': {
-                'line': {'color': "black", 'width': 4},
-                'thickness': 0.75,
-                'value': prediction
-            }
-        },
-        domain={'x': [0, 1], 'y': [0, 1]},
-    ))
-    fig.update_layout(margin=dict(l=20, r=20, t=20, b=20), 
-                      height=150,
-                      paper_bgcolor = '#000000',
-                      font_color = colors_config['colors']['text'],
-                      )
-    return fig
-
-def create_bar(df):
-    
-    fig = px.bar(df, x = df.index, y= df.columns, title = 'All Time Historical Performance',
-                       color_discrete_sequence = colors_config['colors']['palet']
-                      )
-    fig.update_layout(
-                        plot_bgcolor=colors_config['colors']['bg_figs'],
-                        paper_bgcolor = '#000000',
-                        font_color = colors_config['colors']['text'],
-                        font_family = colors_config['colors']['font'],
-                        barmode = 'group',
-                        margin = {'l':10, 'r':30, 't':40, 'b':0, 'pad':0},
-                        height = 150,
-                        title = {'font':{'size':14}, 'x':0.5 },
-                        xaxis = {'title':''},
-                        yaxis = {'title':'', 'tickformat':',.2%'},
-                        showlegend = False
-                        ) 
-    return fig
-    
 
 # donwloading data
 fname = 'DC_2024trades.csv'
@@ -117,7 +80,7 @@ df = pd.read_csv(f'../{fname}', parse_dates = ['date'], index_col = 'date')
 metaname = 'financial_metadata.csv'
 dfmeta = pd.read_csv(f'../{metaname}')
 
-# dataprep for top15 table on stocks page
+# dataprep for top12 table on stocks page
 dftop15 = df.groupby('ticker').pnl_cl.sum().sort_values(ascending=False).head(12)
 dftop15 = dftop15.reset_index()
 dftop15 = dftop15.rename(columns={'ticker':'Top12', 'pnl_cl':'Top_PnL'})
@@ -135,11 +98,13 @@ table1_columns = [
         dict(id='Worst_PnL', name='P/L', type='numeric', format=percentage),
       ]
 
-
+#making this page to be read
 dash.register_page(__name__)
 
+# setting the background color of the page in an image
 background_img = 'linear-gradient(to left, rgba(39,83,81,0.75), rgba(0,0,0,1))'
 
+# here the layout of the page starts
 layout = html.Div(
             style={
                 'background-image': background_img,  # Specify the path to your image file
@@ -150,7 +115,9 @@ layout = html.Div(
             },
 
     children=[
+        # ROW 1
         dbc.Row([
+            # COLUMN 1 for the Buttons
             dbc.Col([
                 dbc.Button('MTD', outline=False, color='primary', id='mtd', n_clicks=0),
                 html.Div(style={'height': '10px'}),                
@@ -158,8 +125,7 @@ layout = html.Div(
                 html.Div(style={'height': '10px'}),
                 dbc.Button('YTD', outline=False, color='primary', id='ytd', n_clicks=0),
                 ], width = 1),
-            
-            
+            # COLUMN 2 with Dropdown for stocks, linegraph for stocks, with Dropdown for strategy and interactive table
             dbc.Col([
                 dcc.Dropdown(id='my_dpdn',
                               multi=False, 
@@ -194,6 +160,7 @@ layout = html.Div(
                         ),
                         ]),
                 ], width = 5),
+            # COLUMN 3 with CARD and 2 barcharts
             dbc.Col([
                 dbc.Card(
                     dbc.CardBody(id='financial-info-card'),
@@ -220,8 +187,14 @@ layout = html.Div(
         ]
     )
 
+# =============================================================================
+# # The Outputs contain the interactive elements, this page has 5 interactive elements,
+# # with the card containing another 2 elements
+# # The Inputs are the choices the User can make, which on this page is time period related through buttons,
+# # and 2 dropdown menus for stock and strategy selection
+# 
+# =============================================================================
                 
-
 @callback(
     [
      Output('bar-fig', 'figure'),
@@ -239,7 +212,10 @@ layout = html.Div(
      ],
     )
 
+# function to update interactive elements, make sure the arguments are all Input elements from the callback
 def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
+    
+    # based on button selection set the time period dates
     ctx = dash.callback_context
     button_id = None
     if ctx.triggered:
@@ -261,9 +237,10 @@ def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
     elif selected_strat == 'Leveraged':
         strat = 'pnl_cl'
     
+    # create the line graph
     figln = plots_generator.generate_individual_stock_graph(selected_stock, start_date)
-    
-    # # dataprep for top15 table
+
+    # dataprep for top12 table
     dfc = df[df.index >= start_date]
     dftop15 = dfc.groupby('ticker')[strat].sum().sort_values(ascending=False).head(12)
     dftop15 = dftop15.reset_index()
@@ -273,10 +250,12 @@ def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
     dfworst15 = dfworst15.reset_index()
     dfworst15 = dfworst15.rename(columns={'ticker':'Worst12', strat:'Worst_PnL'})
     
-    dft = round(pd.concat([dftop15, dfworst15], axis=1), 4)
+    dft = round(pd.concat([dftop15, dfworst15], axis=1), 4)  #this dataframe has to be returned as a dictionary for the dash table to interpret it correctly
     
+    # create the 2 barcharts 
     figbar, figbar2 = plots_generator.generate_bestinhistory_bar(strat)
     
+    # dataprep for Card info
     row = dfmeta[dfmeta['ticker'] == selected_stock].iloc[0]
     
     status_color = "green" if row['Status'] == 'Active' else "red"
@@ -286,21 +265,21 @@ def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
     change_color = get_change_color(row['Last Change'])
     ytd_color = get_change_color(row['YTD'])
     
-    
+    # create the Card, including 2 graphs
     card_content = [
         html.H4(f"{selected_stock}, {row['Name']}", className="card-title", style={'color': '#36D0B7'}),
         html.H6(
             [
-                f"Last Close: ${row['Last Close']}  ,  ",
-                html.Span(
-                    format_change(row['Last Change']),
-                    style={'color': change_color}
+            f"Last Close: ${row['Last Close']}  ,  ",
+            html.Span(
+                format_change(row['Last Change']),
+                style={'color': change_color}
+            ),
+            ",  YTD: ",
+            html.Span(
+                format_change(row['YTD']),
+                style = {'color': ytd_color},
                 ),
-                ",  YTD:",
-                html.Span(
-                    format_change(row['YTD']),
-                    style = {'color': ytd_color},
-                    ),
             ],
             className="card-subtitle"
         ),
@@ -315,7 +294,7 @@ def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
                 html.P(f"P/E Ratio: {row['P/E Ratio']}"),
                 html.P(f"Div Yield: {row['Div Yield']}"),
                 html.Hr(),
-                dcc.Graph(figure=create_bar(dfmeta[dfmeta['ticker'] == selected_stock][['All-Time AI', 'All-Time Cond', 'All-Time Lvg']]))
+                dcc.Graph(figure=plots_generator.generate_individual_stock_histbar(dfmeta[dfmeta['ticker'] == selected_stock][['All-Time AI', 'All-Time Cond', 'All-Time Lvg']]))
             ], width=6),
             dbc.Col([
                 html.H6("Market Quantitatives", className="card-subtitle", style={'color':colors_config['colors']['text'], 'font-weight': 'underline'}),
@@ -327,7 +306,7 @@ def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
                 html.H6(f"Sentiment {row['Next Day']}", className="card-subtitle"),
                 html.Span(row['Sentiment'], className = "card-subtitle", style={'color': fill_color, 'font-weight': 'bold'}),
                 html.Hr(),
-                dcc.Graph(figure=create_gauge(row['Prediction'], fill_color), config={'displayModeBar': False})
+                dcc.Graph(figure=plots_generator.generate_gauge_nextpred(row['Prediction'], fill_color), config={'displayModeBar': False})
             ], width=6)
         ]),
         html.Div([
@@ -336,7 +315,7 @@ def update_stockspage(mtd, qtd, ytd, selected_stock, selected_strat):
             html.Span(f"Last Updated: {row['Last Updated']}", style={"font-size": "smaller"}),
             ], style={"position": "absolute", "top": "10px", "right": "10px"}
             ),
-        ]
-    
+        ]    
 
+    # make sure the returns have the same order as the callbacks
     return figln, dft.to_dict('records'), figbar, figbar2, card_content

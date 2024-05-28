@@ -19,15 +19,16 @@ Created on Sun May  5 11:59:12 2024
 #                plots_generator.py
 #                metrics_generator.py
 #                report_creator.py
-#                -- PAGES      /   home.py
+#               | -- PAGES     /   home.py
 #                                  historical.py
 #                                  stock.py
 #                                  description.py
 #                                  report.py
+#               |-- ASSETS     /   logo.png
+#                                  custom.css
 #     |-- DATA / DC_2024trades.csv
 #                XGB_trades18-23.csv 
 #                DC_reports24.csv
-#     |-- ASSETS / logo.png
 # =============================================================================
 
 
@@ -48,7 +49,7 @@ import os
 #  Initialising the Dash app 
 #  setting use_pages = True to ensure a multipage dashboard
 #  import external sheets 1) a dash bootstrap theme for fluency of the different components 2) font-awesome for copyright figurine
-#  include assets folder to direct to images and CSS files
+#  include assets folder to direct to images and CSS file. The CSS file overwrites all the default BootStrap theme colours
 # 
 # =============================================================================
 assets_path = os.getcwd() + '/assets'
@@ -56,65 +57,28 @@ app = Dash(__name__, use_pages=True, external_stylesheets=
            [dbc.themes.BOOTSTRAP,
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css'
             ], suppress_callback_exceptions=True, assets_folder=assets_path)
+
 server = app.server   # required for publishing
 
 ######################  NAVIGATION BAR #################################
 
 # Define the navigation bar
-# navbar = html.Div([
-#     html.Div([
-#         html.Img(src = assets_path + '/xpulsar-logo.png', height='120px', style={'float': 'right', 'margin-top': '3px', 'margin-right': '20px'}),
-#     ], style={'width': '100%'}),  # Ensures the logo stays on the same line as the navigation links
-
-#     # Navigation links
-#     dbc.Nav([
-#         dbc.NavItem(dbc.NavLink('Main', href='/', active=True)),
-#         dbc.NavItem(dbc.NavLink('Historical', href='/historical', active=True)),
-#         dbc.NavItem(dbc.NavLink('Stocks', href='/stocks', active=True)),
-#         dbc.NavItem(dbc.NavLink('Description', href='/description', active=True)),
-#         dbc.NavItem(dbc.NavLink('Reports', href='/report', active=True)),
-#     ], pills=False),
-
-
-##################### FOOTER  ################################
-#define footer
-footer = dbc.Container(
-    dbc.Row(
-        [
-            dbc.Col(html.A('XPulsar Capital', href='/'), align='right')
-            ]        
-        ),
-        className='footer',
-        fluid=True,
-    )
-
-footer =     html.Footer([
-        html.Div([
-            html.I(className="fa fa-copyright"),  # Font Awesome icon for copyright
-            html.Span("2024, XPulsar Capital, All rights reserved")
-        ])
-    ],)
-
-######################### LAYOUT of APP  and RUN ###############################
-
-# Define the layout
-app.layout = dbc.Container([
-    dbc.Navbar(
+navbar= dbc.Navbar(
         dbc.Container([
-            # Nav items on the left
+            # Nav items are defaulted on the right. We control them to the left using dbc Rows and Cols.
+            # The Main/Home first page has href="/" only as it will automatically be found through the register page multipage command
             dbc.Row([
-
                 dbc.Col([
                     dbc.NavItem(dbc.NavLink("Main", href="/", active=True), style = {'margin-left':'20px'}),
                     dbc.NavItem(dbc.NavLink("Historical", href="/historical", active=True)),
                     dbc.NavItem(dbc.NavLink('Stocks', href='/stocks', active=True)),
                     dbc.NavItem(dbc.NavLink('Description', href='/description', active=True)),
                     dbc.NavItem(dbc.NavLink('Report', href='/report', active=True)),
-                ], className= 'hstack gap-3'),
+                ], className= 'hstack gap-3'),  #hstaock is a horizontal placement of the links
             ], className="g-10"),  # Use className="g-0" to remove gutter spacing between columns
             dbc.Col([
                 html.Div([
-                    # Heading
+                    # Heading is in the navbar as there is enough space for it
                     html.H1('Tracking a proxy Russell 1000 Portfolio',
                             className='text-center text-primary, mb-2',
                             style={'font-size': '28px',
@@ -138,8 +102,35 @@ app.layout = dbc.Container([
                 ], style={'width': '100%'})
             ], width=2, className="ml-auto"),  # Use className="ml-auto" to push the logo to the right
         ], fluid=True),
-        dark=True,          # Use dark theme for the navbar
-    ),
+    )
+
+
+##################### FOOTER  ################################
+#define footer
+footer = dbc.Container(
+    dbc.Row(
+        [
+            dbc.Col(html.A('XPulsar Capital', href='/'), align='right')
+            ]        
+        ),
+        className='footer',
+        fluid=True,
+    )
+
+footer =     html.Footer([
+        html.Div([
+            html.I(className="fa fa-copyright"),  # Font Awesome icon for copyright
+            html.Span("2024, XPulsar Capital, All rights reserved")
+        ]),
+        html.Hr(),
+        html.P('Disclaimer -- The information contained on this Website and the resources available for download through this website is not intended as, and shall not be understood or construed as, financial advice or be used as a basis for making investment decisions.'),
+    ],)
+
+######################### LAYOUT of APP  and RUN ###############################
+
+# Define the layout
+app.layout = dbc.Container([
+    navbar,
     dash.page_container,  # Placeholder for page content
     footer, # Placeholder for footer component
 ], fluid=True)  # Make the container full-width
