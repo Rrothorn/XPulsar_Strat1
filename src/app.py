@@ -98,7 +98,7 @@ navbar= dbc.Navbar(
             # Logo on the right
             dbc.Col([
                 html.Div([
-                    html.Img(src='assets/xpulsar-logo.png', height='100vh', style={'float': 'right', 'margin-top': '3px', 'margin-right': '20px'}),
+                    html.Img(src='assets/CAPITAL3.png', height='100vh', style={'float': 'right', 'margin-top': '3px', 'margin-right': '20px'}),
                 ], style={'width': '100%'})
             ], width=2, className="ml-auto"),  # Use className="ml-auto" to push the logo to the right
         ], fluid=True),

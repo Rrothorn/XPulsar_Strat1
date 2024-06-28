@@ -103,15 +103,8 @@ layout = html.Div(
                         style_cell = {'color': colors_config['colors']['palet'][2],
                                       'font_family':'bold',
                                       },
-                        style_data_conditional=[
-                            {
-                                "if": {"row_index": len(dft) -1},
-                                'backgroundColor': colors_config['colors']['palet'][2],
-                                'color': '#FFFFFF',
-                                "fontWeight": "bold",
-                                
-                            },
-                            ],                        
+                        style_data_conditional=[],
+                        page_size = 22,
                         )
                     ]),
                 ], width=8),
@@ -121,31 +114,83 @@ layout = html.Div(
 
 @callback(
     [Output('report_table', 'data'),
+     Output('report_table', 'style_data_conditional'),
      Output('pdf-link', 'data')],
     [Input('my-date-picker-single', 'date'),
      Input('dwnl-report', 'n_clicks')]
 )
-def update_page5(date_value, n_clicks):
+# def update_page5(date_value, n_clicks):
     
+#     dft = round(df[['ticker',
+#                     'buysell',
+#                     'betsize_cl',
+#                     'trade_open',
+#                     'trade_close',
+#                     'pnl_cl']][(df.index == date_value) & (df.pnl_cl != 0)]  , 5)
+#     dftotal = dft[-1:]
+#     dftotal.ticker = 'TOTAL'
+#     dftotal.buysell = ''
+#     dftotal.betsize_cl = dft.betsize_cl.sum()
+#     dftotal.trade_open = ''
+#     dftotal.trade_close = ''
+#     dftotal.pnl_cl = dft.pnl_cl.sum()
+#     dft = pd.concat([dft, dftotal])
+    
+#     if dft.empty:
+#         return [], [], None
+    
+#     last_row = len(dft.to_dict('records')) - 1
+#     style_last_row = [
+#         {
+#             "if": {"row_index": last_row},
+#             'backgroundColor': colors_config['colors']['palet'][2],
+#             'color': '#FFFFFF',
+#             "fontWeight": "bold",
+            
+#         },
+#         ]
+    
+#     if n_clicks is None or n_clicks == 0:
+#         return dft.to_dict('records'), None
+
+#     pdf_report = generate_report(df, date_value)
+#     pdf_report_base64 = base64.b64encode(pdf_report).decode('utf-8')
+    
+#     return [dft.to_dict('records'), style_last_row, pdf_report_base64]
+def update_page5(date_value, n_clicks):
+    # Assume df is already defined in your context
     dft = round(df[['ticker',
                     'buysell',
                     'betsize_cl',
                     'trade_open',
                     'trade_close',
-                    'pnl_cl']][(df.index == date_value) & (df.pnl_cl != 0)]  , 5)
-    dftotal = dft[-1:]
-    dftotal.ticker = 'TOTAL'
-    dftotal.buysell = ''
-    dftotal.betsize_cl = dft.betsize_cl.sum()
-    dftotal.trade_open = ''
-    dftotal.trade_close = ''
-    dftotal.pnl_cl = dft.pnl_cl.sum()
+                    'pnl_cl']][(df.index == date_value) & (df.pnl_cl != 0)], 5)
+    
+    if dft.empty:
+        return [], [], None
+    
+    dftotal = dft[-1:].copy()
+    dftotal['ticker'] = 'TOTAL'
+    dftotal['buysell'] = ''
+    dftotal['betsize_cl'] = dft['betsize_cl'].sum()
+    dftotal['trade_open'] = ''
+    dftotal['trade_close'] = ''
+    dftotal['pnl_cl'] = dft['pnl_cl'].sum()
     dft = pd.concat([dft, dftotal])
     
+    style_last_row = [
+        {
+            "if": {"filter_query": f"{{ticker}} = 'TOTAL'"},
+            'backgroundColor': colors_config['colors']['palet'][2],
+            'color': '#FFFFFF',
+            "fontWeight": "bold",
+        },
+    ]
+    
     if n_clicks is None or n_clicks == 0:
-        return dft.to_dict('records'), None
+        return dft.to_dict('records'), style_last_row, None
 
     pdf_report = generate_report(df, date_value)
     pdf_report_base64 = base64.b64encode(pdf_report).decode('utf-8')
     
-    return dft.to_dict('records'), pdf_report_base64
+    return dft.to_dict('records'), style_last_row, pdf_report_base64
