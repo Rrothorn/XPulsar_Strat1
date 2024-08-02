@@ -231,11 +231,11 @@ def update_page1(start_date, end_date, mtd, qtd, ytd):
     if button_id == 'mtd':
         start_date = pd.Timestamp.now().to_period('M').start_time
         figln_title = 'MTD'
-        target = 0.7*0.0222
+        target = 0.7*0.0158
     elif button_id == 'qtd':
         start_date =  pd.Timestamp.now().to_period('Q').start_time
         figln_title = 'QTD'
-        target = 0.7 * 0.0307 
+        target = 0.7 * 0.0705 
     elif button_id == 'ytd':
         start_date = pd.Timestamp.now().to_period('Y').start_time
         figln_title = 'YTD'
